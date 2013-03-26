@@ -1,4 +1,4 @@
-#!./runscheme.lua
+#!./runscm.lua
 
 ; vim: ft=scheme
 
