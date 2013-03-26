@@ -4,7 +4,7 @@
 
 (include "prelude.scm")
 
-(print (string "Hello, world!"))
+(print "Hello, world!")
 
 (print
   (reduce (lambda (a b) (+ a b))

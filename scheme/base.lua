@@ -110,7 +110,7 @@ genv:_define {
     end,
 
     include = function (env, filename)
-        return env:_eval(parse.file(filename))
+        return env:_eval(parse.file(env:_eval(filename)))
     end,
     -- }}}
 
@@ -253,7 +253,8 @@ genv:_define {
     -- }}}
 
     -- Basic syntactic constructions {{{
-    lambda = function (env, argnames, body)
+    lambda = function (env, argnames, ...)
+        local body = { ... }
         return function (env, ...)
             local args = { ... }
             local _env = env:_new()
@@ -264,7 +265,7 @@ genv:_define {
             for i, a in ipairs(argnames) do
                 _env[a] = env:_eval(args[i])
             end
-            return _env:_eval(body)
+            return _env:begin(unpack(body))
         end
     end,
 

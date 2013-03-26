@@ -30,7 +30,7 @@ local function token(expr)
                 i = e + 2
             else
                 r = r .. expr:sub(i, s - 1)
-                return r, expr:sub(e + 1)
+                return "\"" .. r .. "\"", expr:sub(e + 1)
             end
         end
 

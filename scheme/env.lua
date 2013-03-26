@@ -58,8 +58,15 @@ function _M._eval(env, ...)
             for i = 2, #token do table.insert(args, token[i]) end
             result = fun(env, unpack(args))
 
+        elseif type(token) == "number" then
+            result = token
+
         else
-            result = tonumber(token) or env[token]
+            if token:sub(1, 1) == "\"" and token:sub(-1) == "\"" then
+                result = token:sub(2, -2)
+            else
+                result = tonumber(token) or env[token]
+            end
         end
     end
 
