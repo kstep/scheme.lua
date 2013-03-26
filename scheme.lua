@@ -194,7 +194,7 @@ global_env:_define {
         return env:_eval(a) % env:_eval(b)
     end,
 
-    ["eval-lua"] = function (env, code)
+    ["lua-eval"] = function (env, code)
         return loadstring("return " .. env:_eval(code))()
     end,
 
@@ -495,6 +495,10 @@ global_env:_define {
     include = function (env, filename)
         return env:_eval(parsefile(filename))
     end,
+
+    ["lua-import"] = function (env, module)
+        env:_import({ [module] = require(module) })
+    end
 }
 
 return _M
