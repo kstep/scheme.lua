@@ -1,0 +1,243 @@
+local genv = require("scheme.env")
+local parse = require("scheme.parse")
+local list_dump = require("scheme.util").list_dump
+
+local _M = {}
+
+genv:_define {
+    get = function (env, table, name)
+        return env:_eval(table)[name]
+    end,
+
+    ["+"] = function (env, ...)
+        local arg = { ... }
+        sum = env:_eval(arg[1]) or 0
+        for i = 2, #arg do
+            sum = sum + env:_eval(arg[i])
+        end
+        return sum
+    end,
+
+    ["-"] = function (env, ...)
+        local arg = { ... }
+        dif = env:_eval(arg[1]) or 0
+        for i = 2, #arg do
+            dif = dif - env:_eval(arg[i])
+        end
+        return dif
+    end,
+
+    ["*"] = function (env, ...)
+        local arg = { ... }
+        mul = env:_eval(arg[1]) or 1
+        for i = 2, #arg do
+            mul = mul * env:_eval(arg[i])
+        end
+        return mul
+    end,
+
+    ["/"] = function (env, ...)
+        local arg = { ... }
+        div = env:_eval(arg[1]) or 1
+        for i = 2, #arg do
+            div = div / eval(env, arg[i])
+        end
+        return div
+    end,
+
+    div = function (env, a, b)
+        return math.floor(env:_eval(a) / env:_eval(b))
+    end,
+
+    mod = function (env, a, b)
+        return env:_eval(a) % env:_eval(b)
+    end,
+
+    ["lua-eval"] = function (env, code)
+        return loadstring("return " .. env:_eval(code))()
+    end,
+
+    string = function (env, ...)
+        return table.concat({ ... }, " ")
+    end,
+
+    ["string?"] = function (env, arg)
+        return type(env:_eval(arg)) == "string"
+    end,
+    ["number?"] = function (env, arg)
+        return type(env:_eval(arg)) == "number"
+    end,
+    ["boolean?"] = function (env, arg)
+        return type(env:_eval(arg)) == "boolean"
+    end,
+    ["lambda?"] = function (env, arg)
+        return type(env:_eval(arg)) == "function"
+    end,
+    ["list?"] = function (env, arg)
+        return type(env:_eval(arg)) == "table"
+    end,
+
+    table = function (env, ...)
+        local result = {}
+        for _, pair in ipairs({ ... }) do
+            result[pair[1]] = env:_eval(pair[2])
+        end
+        return result
+    end,
+
+    cond = function (env, ...)
+        for _, pair in ipairs({ ... }) do
+            local test, expr = unpack(pair)
+            if test == "else" or env:_eval(test) then
+                return env:_eval(expr)
+            end
+        end
+    end,
+
+    car = function (env, expr)
+        local val = env:_eval(expr)
+        assert(val and val[1], "Error: Attempt to apply car on nil")
+        return val[1]
+    end,
+
+    ["if"] = function (env, cond, yes, no)
+        if env:_eval(cond) then
+            return env:_eval(yes)
+        else
+            return env:_eval(no)
+        end
+    end,
+
+    ["or"] = function (env, ...)
+        local val
+        for _, v in ipairs({ ... }) do
+            val = env:_eval(v)
+            if val then return true end
+        end
+        return false
+    end,
+
+    ["and"] = function (env, ...)
+        local val
+        for _, v in ipairs({ ... }) do
+            val = env:_eval(v)
+            if not val then return false end
+        end
+        return true
+    end,
+
+    ["null?"] = function (env, expr)
+        return #env:_eval(expr) == 0
+    end,
+
+    cdr = function (env, expr)
+        expr = env:_eval(expr)
+        local rest = {}
+        for i = 2, #expr do
+            table.insert(rest, expr[i])
+        end
+        return rest
+    end,
+
+    quote = function (env, ...)
+        return { ... }
+    end,
+
+    cons = function (env, head, tail)
+        local list = { env:_eval(head) }
+        tail = env:_eval(tail)
+
+        if type(tail) == "table" then
+            for _, v in ipairs(tail) do
+                table.insert(list, v)
+            end
+        else
+            table.insert(list, tail)
+        end
+        return list
+    end,
+
+    print = function (env, expr)
+        print(list_dump(env:_eval(expr)))
+    end,
+
+    display = function (env, expr)
+        io.write(list_dump(env:_eval(expr)))
+    end,
+
+    length = function (env, expr)
+        return #env:_eval(expr)
+    end,
+
+    define = function (env, key, value)
+
+        if type(key) == "table" then
+            local argnames = key
+            key = key[1]
+            table.remove(argnames, 1)
+
+            value = env:lambda(argnames, value)
+        else
+            value = env:_eval(value)
+        end
+
+        env[key] = value
+        return value
+    end,
+
+    ["set!"] = function (env, key, value)
+        local val = env:_eval(value)
+        local _env = env:_find(key) or env
+        _env[key] = val
+        return val
+    end,
+
+    lambda = function (env, argnames, body)
+        return function (env, ...)
+            local args = { ... }
+            local _env = env:_new()
+
+            assert(#argnames == #args, "Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
+
+            local i, a
+            for i, a in ipairs(argnames) do
+                _env[a] = env:_eval(args[i])
+            end
+            return _env:_eval(body)
+        end
+    end,
+
+    begin = function (env, ...)
+        local result
+        for _, expr in ipairs({ ... }) do
+            result = env:_eval(expr)
+        end
+        return result
+    end,
+
+    ["="] = function (env, ...)
+        local exprs = { ... }
+
+        exprs[1] = env:_eval(exprs[1])
+        for i = 2, #exprs do
+            exprs[i] = env:_eval(exprs[i])
+            if exprs[i - 1] ~= exprs[i] then return false end
+        end
+
+        return true
+    end,
+
+    ["not"] = function (env, expr)
+        return not env:_eval(expr)
+    end,
+
+    include = function (env, filename)
+        return env:_eval(parse.file(filename))
+    end,
+
+    ["lua-import"] = function (env, module)
+        env:_import({ [module] = require(module) })
+    end,
+}
+
+return _M
