@@ -5,10 +5,7 @@ local list_dump = require("scheme.util").list_dump
 local _M = {}
 
 genv:_define {
-    get = function (env, table, name)
-        return env:_eval(table)[name]
-    end,
-
+    -- Basic arithmetic {{{
     ["+"] = function (env, ...)
         local arg = { ... }
         sum = env:_eval(arg[1]) or 0
@@ -52,15 +49,9 @@ genv:_define {
     mod = function (env, a, b)
         return env:_eval(a) % env:_eval(b)
     end,
+    -- }}}
 
-    ["lua-eval"] = function (env, code)
-        return loadstring("return " .. env:_eval(code))()
-    end,
-
-    string = function (env, ...)
-        return table.concat({ ... }, " ")
-    end,
-
+    -- Type predicates {{{
     ["string?"] = function (env, arg)
         return type(env:_eval(arg)) == "string"
     end,
@@ -76,6 +67,12 @@ genv:_define {
     ["list?"] = function (env, arg)
         return type(env:_eval(arg)) == "table"
     end,
+    -- }}}
+
+    -- Type constructors {{{
+    string = function (env, ...)
+        return table.concat({ ... }, " ")
+    end,
 
     table = function (env, ...)
         local result = {}
@@ -84,7 +81,9 @@ genv:_define {
         end
         return result
     end,
+    -- }}}
 
+    -- Flow control {{{
     cond = function (env, ...)
         for _, pair in ipairs({ ... }) do
             local test, expr = unpack(pair)
@@ -92,12 +91,6 @@ genv:_define {
                 return env:_eval(expr)
             end
         end
-    end,
-
-    car = function (env, expr)
-        local val = env:_eval(expr)
-        assert(val and val[1], "Error: Attempt to apply car on nil")
-        return val[1]
     end,
 
     ["if"] = function (env, cond, yes, no)
@@ -108,6 +101,51 @@ genv:_define {
         end
     end,
 
+    begin = function (env, ...)
+        local result
+        for _, expr in ipairs({ ... }) do
+            result = env:_eval(expr)
+        end
+        return result
+    end,
+
+    include = function (env, filename)
+        return env:_eval(parse.file(filename))
+    end,
+    -- }}}
+
+    -- Classic list operations {{{
+    car = function (env, expr)
+        local val = env:_eval(expr)
+        assert(val and val[1], "Error: Attempt to apply car on nil")
+        return val[1]
+    end,
+
+    cdr = function (env, expr)
+        expr = env:_eval(expr)
+        local rest = {}
+        for i = 2, #expr do
+            table.insert(rest, expr[i])
+        end
+        return rest
+    end,
+
+    cons = function (env, head, tail)
+        local list = { env:_eval(head) }
+        tail = env:_eval(tail)
+
+        if type(tail) == "table" then
+            for _, v in ipairs(tail) do
+                table.insert(list, v)
+            end
+        else
+            table.insert(list, tail)
+        end
+        return list
+    end,
+    -- }}}
+
+    -- Boolean operations {{{
     ["or"] = function (env, ...)
         local val
         for _, v in ipairs({ ... }) do
@@ -126,37 +164,42 @@ genv:_define {
         return true
     end,
 
-    ["null?"] = function (env, expr)
-        return #env:_eval(expr) == 0
+    ["not"] = function (env, expr)
+        return not env:_eval(expr)
     end,
+    -- }}}
 
-    cdr = function (env, expr)
-        expr = env:_eval(expr)
-        local rest = {}
-        for i = 2, #expr do
-            table.insert(rest, expr[i])
+    -- Arithmetic predicates {{{
+    ["="] = function (env, ...)
+        local exprs = { ... }
+
+        exprs[1] = env:_eval(exprs[1])
+        for i = 2, #exprs do
+            exprs[i] = env:_eval(exprs[i])
+            if exprs[i - 1] ~= exprs[i] then return false end
         end
-        return rest
+
+        return true
     end,
 
-    quote = function (env, ...)
-        return { ... }
+    [">"] = function (env, a, b)
+        return env:_eval(a) > env:_eval(b)
     end,
 
-    cons = function (env, head, tail)
-        local list = { env:_eval(head) }
-        tail = env:_eval(tail)
-
-        if type(tail) == "table" then
-            for _, v in ipairs(tail) do
-                table.insert(list, v)
-            end
-        else
-            table.insert(list, tail)
-        end
-        return list
+    ["<"] = function (env, a, b)
+        return env:_eval(a) < env:_eval(b)
     end,
 
+    [">="] = function (env, a, b)
+        return env:_eval(a) >= env:_eval(b)
+    end,
+
+    ["<="] = function (env, a, b)
+        return env:_eval(a) <= env:_eval(b)
+    end,
+    -- }}}
+
+    -- Input/output {{{
     print = function (env, expr)
         print(list_dump(env:_eval(expr)))
     end,
@@ -164,11 +207,9 @@ genv:_define {
     display = function (env, expr)
         io.write(list_dump(env:_eval(expr)))
     end,
+    -- }}}
 
-    length = function (env, expr)
-        return #env:_eval(expr)
-    end,
-
+    -- Assignment {{{
     define = function (env, key, value)
 
         if type(key) == "table" then
@@ -191,7 +232,9 @@ genv:_define {
         _env[key] = val
         return val
     end,
+    -- }}}
 
+    -- Basic syntactic constructions {{{
     lambda = function (env, argnames, body)
         return function (env, ...)
             local args = { ... }
@@ -207,37 +250,30 @@ genv:_define {
         end
     end,
 
-    begin = function (env, ...)
-        local result
-        for _, expr in ipairs({ ... }) do
-            result = env:_eval(expr)
-        end
-        return result
+    quote = function (env, ...)
+        return { ... }
     end,
+    -- }}}
 
-    ["="] = function (env, ...)
-        local exprs = { ... }
-
-        exprs[1] = env:_eval(exprs[1])
-        for i = 2, #exprs do
-            exprs[i] = env:_eval(exprs[i])
-            if exprs[i - 1] ~= exprs[i] then return false end
-        end
-
-        return true
-    end,
-
-    ["not"] = function (env, expr)
-        return not env:_eval(expr)
-    end,
-
-    include = function (env, filename)
-        return env:_eval(parse.file(filename))
+    -- Lua integration {{{
+    ["lua-eval"] = function (env, code)
+        return loadstring("return " .. env:_eval(code))()
     end,
 
     ["lua-import"] = function (env, module)
         env:_import({ [module] = require(module) })
     end,
+
+    get = function (env, table, name)
+        return env:_eval(table)[name]
+    end,
+    -- }}}
+
+    -- Miscellaneous predicates {{{
+    ["null?"] = function (env, expr)
+        return #env:_eval(expr) == 0
+    end,
+    -- }}}
 }
 
 return _M
