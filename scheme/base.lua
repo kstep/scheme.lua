@@ -210,6 +210,24 @@ genv:_define {
     -- }}}
 
     -- Assignment {{{
+    let = function (env, defs, ...)
+        local _env = env:_new()
+        for _, binding in ipairs(defs) do
+            _env[binding[1]] = env:_eval(binding[2])
+        end
+
+        return _env:begin(...)
+    end,
+
+    ["let*"] = function (env, defs, ...)
+        local _env = env:_new()
+        for _, binding in ipairs(defs) do
+            _env[binding[1]] = _env:_eval(binding[2])
+        end
+
+        return _env:begin(...)
+    end,
+
     define = function (env, key, value)
 
         if type(key) == "table" then
