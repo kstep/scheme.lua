@@ -112,6 +112,21 @@ local function wrap_function(fun)
 end
 _M.wrap = wrap_function
 
+local function import(env, defs, prefix)
+    for name, body in pairs(defs) do
+        if prefix then name = prefix .. "." .. name end
+
+        if type(body) == "function" then
+            body = wrap_function(body)
+        elseif type(body) == "table" then
+            import(env, body, name)
+        end
+
+        env[name] = body
+    end
+end
+_M.import = function (defs, env) return import(env or global_env, defs) end
+
 local function define(env, defs)
     for name, body in pairs(defs) do
         env[name] = body
@@ -128,8 +143,13 @@ global_env._new = new
 global_env._eval = eval
 global_env._find = find_env
 global_env._define = define
+global_env._import = import
 
 global_env:_define {
+    get = function (env, table, name)
+        return env:_eval(table)[name]
+    end,
+
     ["+"] = function (env, ...)
         local arg = { ... }
         sum = env:_eval(arg[1]) or 0
