@@ -1,4 +1,4 @@
-local list_dump = require("scheme.util").list_dump
+local util = require("scheme.util")
 
 local _M = {}
 
@@ -30,9 +30,9 @@ function _M._import(env, defs, prefix)
         if prefix then name = prefix .. "." .. name end
 
         if type(body) == "function" then
-            body = wrap_function(body)
+            body = util.wrap(body)
         elseif type(body) == "table" then
-            import(env, body, name)
+            env:_import(body, name)
         end
 
         env[name] = body
@@ -52,7 +52,7 @@ function _M._eval(env, ...)
 
         elseif type(token) == "table" then
             local fun = env:_eval(token[1])
-            assert(type(fun) == "function", "Error: " .. list_dump(fun) .. " is not a function")
+            assert(type(fun) == "function", "Error: " .. util.list_dump(fun) .. " is not a function")
 
             local args = {}
             for i = 2, #token do table.insert(args, token[i]) end
