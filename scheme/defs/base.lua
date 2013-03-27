@@ -1,7 +1,31 @@
 local parse = require("scheme.parse")
 local list_dump = require("scheme.util").list_dump
 
-return {
+local function let(env, defs, ...)
+    local _env = env:_new()
+    for _, binding in ipairs(defs) do
+        _env[binding[1]] = env:_eval(binding[2])
+    end
+
+    return _env:begin(...)
+end
+
+local function named_let(env, name, defs, ...)
+    local argnames = {}
+    local args = {}
+    for _, pair in ipairs(defs) do
+        table.insert(argnames, pair[1])
+        -- We don't need to eval args here, lambda will do it for us
+        table.insert(args, pair[2])
+    end
+
+    local _env = env:_new()
+    local fn = _env:lambda(argnames, ...)
+    _env[name] = fn
+    return fn(_env, unpack(args))
+end
+
+local _M = {
     -- Basic arithmetic {{{
     ["+inf.0"] = 1/0,
     ["-inf.0"] = -1/0,
@@ -259,12 +283,15 @@ return {
 
     -- Assignment {{{
     let = function (env, defs, ...)
-        local _env = env:_new()
-        for _, binding in ipairs(defs) do
-            _env[binding[1]] = env:_eval(binding[2])
-        end
+        if type(defs) == "table" then -- normal let
+            return let(env, defs, ...)
 
-        return _env:begin(...)
+        elseif type(defs) == "string" then -- named let
+            return named_let(env, defs, ...)
+
+        else -- error
+            error("Error: Missing expression")
+        end
     end,
 
     ["let*"] = function (env, defs, ...)
