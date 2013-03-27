@@ -84,6 +84,14 @@ genv:_define {
         return table.concat({ ... }, " ")
     end,
 
+    list = function (env, ...)
+        local result = {}
+        for _, expr in ipairs({ ... }) do
+            table.insert(result, env:_eval(expr))
+        end
+        return result
+    end,
+
     table = function (env, ...)
         local result = {}
         for _, pair in ipairs({ ... }) do
