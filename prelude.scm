@@ -1,8 +1,14 @@
-(define (map fn list)
-  (if (null? list) '()
-    (cons (fn (car list)) (map fn (cdr list)))))
+(define (map fn lst)
+  (if (null? lst) '()
+    (cons (fn (car lst)) (map fn (cdr lst)))))
 
-(define (reduce fn list acc) (begin
-                               (if (null? list) acc
-                                 (reduce fn (cdr list) (fn acc (car list))))))
+(define (for-each fn lst)
+  (if (null? lst) '()
+    (begin
+      (fn (car lst))
+      (for-each fn (cdr lst)))))
+
+(define (reduce fn lst acc)
+  (if (null? lst) acc
+    (reduce fn (cdr lst) (fn acc (car lst)))))
 
