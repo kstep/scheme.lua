@@ -301,11 +301,11 @@ return {
     -- }}}
 
     -- Basic syntactic constructions {{{
-    lambda = function (env, argnames, ...)
+    lambda = function (cenv, argnames, ...)
         local body = { ... }
         return function (env, ...)
             local args = { ... }
-            local _env = env:_new()
+            local _env = cenv:_new()
 
             assert(#argnames == #args, "Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
 
