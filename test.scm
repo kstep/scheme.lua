@@ -31,9 +31,9 @@
 
 (define (sub1 n) (- n 1))
 (let* ([is-even? (lambda (n)
-                  (or (zero? n)
-                      (is-odd? (sub1 n))))]
-      [is-odd? (lambda (n)
-                 (and (not (zero? n))
-                      (is-even? (sub1 n))))])
+                   (or (zero? n)
+                       (is-odd? (sub1 n))))]
+       [is-odd? (lambda (n)
+                  (and (not (zero? n))
+                       (is-even? (sub1 n))))])
   (print (is-odd? 11)))
