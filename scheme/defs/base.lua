@@ -26,61 +26,6 @@ local function named_let(env, name, defs, ...)
 end
 
 local _M = {
-    -- Basic arithmetic {{{
-    ["+inf.0"] = 1/0,
-    ["-inf.0"] = -1/0,
-    ["+nan.0"] = -(0/0),
-
-    ["+"] = function (env, ...)
-        local arg = { ... }
-        local sum = env:_eval(arg[1]) or 0
-        for i = 2, #arg do
-            sum = sum + env:_eval(arg[i])
-        end
-        return sum
-    end,
-
-    ["-"] = function (env, ...)
-        local arg = { ... }
-        local dif = env:_eval(arg[1]) or 0
-
-        if #arg < 2 then
-            return -dif
-        end
-
-        for i = 2, #arg do
-            dif = dif - env:_eval(arg[i])
-        end
-        return dif
-    end,
-
-    ["*"] = function (env, ...)
-        local arg = { ... }
-        local mul = env:_eval(arg[1]) or 1
-        for i = 2, #arg do
-            mul = mul * env:_eval(arg[i])
-        end
-        return mul
-    end,
-
-    ["/"] = function (env, ...)
-        local arg = { ... }
-        local div = env:_eval(arg[1]) or 1
-        for i = 2, #arg do
-            div = div / env:_eval(arg[i])
-        end
-        return div
-    end,
-
-    div = function (env, a, b)
-        return math.floor(env:_eval(a) / env:_eval(b))
-    end,
-
-    mod = function (env, a, b)
-        return env:_eval(a) % env:_eval(b)
-    end,
-    -- }}}
-
     -- Type predicates {{{
     ["string?"] = function (env, arg)
         return type(env:_eval(arg)) == "string"
@@ -118,14 +63,6 @@ local _M = {
         local result = {}
         for _, expr in ipairs({ ... }) do
             table.insert(result, env:_eval(expr))
-        end
-        return result
-    end,
-
-    table = function (env, ...)
-        local result = {}
-        for _, pair in ipairs({ ... }) do
-            result[pair[1]] = env:_eval(pair[2])
         end
         return result
     end,
@@ -221,56 +158,6 @@ local _M = {
     end,
     -- }}}
 
-    -- Arithmetic predicates {{{
-    ["="] = function (env, ...)
-        local exprs = { ... }
-
-        exprs[1] = env:_eval(exprs[1])
-        for i = 2, #exprs do
-            exprs[i] = env:_eval(exprs[i])
-            if exprs[i - 1] ~= exprs[i] then return false end
-        end
-
-        return true
-    end,
-
-    [">"] = function (env, a, b)
-        return env:_eval(a) > env:_eval(b)
-    end,
-
-    ["<"] = function (env, a, b)
-        return env:_eval(a) < env:_eval(b)
-    end,
-
-    [">="] = function (env, a, b)
-        return env:_eval(a) >= env:_eval(b)
-    end,
-
-    ["<="] = function (env, a, b)
-        return env:_eval(a) <= env:_eval(b)
-    end,
-
-    ["zero?"] = function (env, a)
-        return env:_eval(a) == 0
-    end,
-
-    ["positive?"] = function (env, a)
-        return env:_eval(a) > 0
-    end,
-
-    ["negative?"] = function (env, a)
-        return env:_eval(a) < 0
-    end,
-
-    ["odd?"] = function (env, a)
-        return env:_eval(a) % 2 ~= 0
-    end,
-
-    ["even?"] = function (env, a)
-        return env:_eval(a) % 2 == 0
-    end,
-    -- }}}
-
     -- Input/output {{{
     print = function (env, expr)
         print(list_dump(env:_eval(expr)))
@@ -286,29 +173,7 @@ local _M = {
     -- }}}
 
     -- Assignment {{{
-    let = function (env, defs, ...)
-        if type(defs) == "table" then -- normal let
-            return let(env, defs, ...)
-
-        elseif type(defs) == "string" then -- named let
-            return named_let(env, defs, ...)
-
-        else -- error
-            error("Error: Missing expression")
-        end
-    end,
-
-    ["let*"] = function (env, defs, ...)
-        local _env = env:_new()
-        for _, binding in ipairs(defs) do
-            _env[binding[1]] = _env:_eval(binding[2])
-        end
-
-        return _env:begin(...)
-    end,
-
     define = function (env, key, value)
-
         if type(key) == "table" then
             local argnames = key
             key = key[1]
@@ -328,6 +193,27 @@ local _M = {
         local _env = env:_find(key) or env
         _env[key] = val
         return val
+    end,
+
+    let = function (env, defs, ...)
+        if type(defs) == "table" then -- normal let
+            return let(env, defs, ...)
+
+        elseif type(defs) == "string" then -- named let
+            return named_let(env, defs, ...)
+
+        else -- error
+            error("Error: Missing expression")
+        end
+    end,
+
+    ["let*"] = function (env, defs, ...)
+        local _env = env:_new()
+        for _, binding in ipairs(defs) do
+            _env[binding[1]] = _env:_eval(binding[2])
+        end
+
+        return _env:begin(...)
     end,
     -- }}}
 
@@ -352,24 +238,6 @@ local _M = {
         return { ... }
     end,
     -- }}}
-
-    -- Lua integration {{{
-    ["lua-eval"] = function (env, code)
-        return loadstring("return " .. env:_eval(code))()
-    end,
-
-    ["lua-import"] = function (env, module)
-        env:_import({ [module] = require(module) })
-    end,
-
-    get = function (env, table, name)
-        return env:_eval(table)[name]
-    end,
-    -- }}}
-
-    assert = function (env, test)
-        assert(env:_eval(test))
-    end,
 }
 
 -- letrec and let* are the same due to Lua nature,

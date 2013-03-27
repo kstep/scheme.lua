@@ -1,7 +1,112 @@
 local math = math
 
 return {
+    -- Basic arithmetic {{{
+    ["+"] = function (env, ...)
+        local arg = { ... }
+        local sum = env:_eval(arg[1]) or 0
+        for i = 2, #arg do
+            sum = sum + env:_eval(arg[i])
+        end
+        return sum
+    end,
+
+    ["-"] = function (env, ...)
+        local arg = { ... }
+        local dif = env:_eval(arg[1]) or 0
+
+        if #arg < 2 then
+            return -dif
+        end
+
+        for i = 2, #arg do
+            dif = dif - env:_eval(arg[i])
+        end
+        return dif
+    end,
+
+    ["*"] = function (env, ...)
+        local arg = { ... }
+        local mul = env:_eval(arg[1]) or 1
+        for i = 2, #arg do
+            mul = mul * env:_eval(arg[i])
+        end
+        return mul
+    end,
+
+    ["/"] = function (env, ...)
+        local arg = { ... }
+        local div = env:_eval(arg[1]) or 1
+        for i = 2, #arg do
+            div = div / env:_eval(arg[i])
+        end
+        return div
+    end,
+
+    div = function (env, a, b)
+        return math.floor(env:_eval(a) / env:_eval(b))
+    end,
+
+    mod = function (env, a, b)
+        return env:_eval(a) % env:_eval(b)
+    end,
+    -- }}}
+
+    -- Arithmetic predicates {{{
+    ["="] = function (env, ...)
+        local exprs = { ... }
+
+        exprs[1] = env:_eval(exprs[1])
+        for i = 2, #exprs do
+            exprs[i] = env:_eval(exprs[i])
+            if exprs[i - 1] ~= exprs[i] then return false end
+        end
+
+        return true
+    end,
+
+    [">"] = function (env, a, b)
+        return env:_eval(a) > env:_eval(b)
+    end,
+
+    ["<"] = function (env, a, b)
+        return env:_eval(a) < env:_eval(b)
+    end,
+
+    [">="] = function (env, a, b)
+        return env:_eval(a) >= env:_eval(b)
+    end,
+
+    ["<="] = function (env, a, b)
+        return env:_eval(a) <= env:_eval(b)
+    end,
+
+    ["zero?"] = function (env, a)
+        return env:_eval(a) == 0
+    end,
+
+    ["positive?"] = function (env, a)
+        return env:_eval(a) > 0
+    end,
+
+    ["negative?"] = function (env, a)
+        return env:_eval(a) < 0
+    end,
+
+    ["odd?"] = function (env, a)
+        return env:_eval(a) % 2 ~= 0
+    end,
+
+    ["even?"] = function (env, a)
+        return env:_eval(a) % 2 == 0
+    end,
+    -- }}}
+
     -- Constants {{{
+    ["+inf.0"] = 1/0,
+    ["-inf.0"] = -1/0,
+    ["+nan.0"] = -(0/0),
+
     pi = math.pi,
     e = math.exp(1),
     -- }}}
