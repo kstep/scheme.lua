@@ -335,6 +335,10 @@ genv:_define {
         return #env:_eval(expr) == 0
     end,
     -- }}}
+
+    assert = function (env, test)
+        assert(env:_eval(test))
+    end,
 }
 
 return _M
