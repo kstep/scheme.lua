@@ -150,18 +150,18 @@ genv:_define {
         local val
         for _, v in ipairs({ ... }) do
             val = env:_eval(v)
-            if val then return true end
+            if val then return val end
         end
-        return false
+        return val
     end,
 
     ["and"] = function (env, ...)
         local val
         for _, v in ipairs({ ... }) do
             val = env:_eval(v)
-            if not val then return false end
+            if not val then return val end
         end
-        return true
+        return val
     end,
 
     ["not"] = function (env, expr)
