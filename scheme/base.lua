@@ -339,12 +339,6 @@ genv:_define {
     end,
     -- }}}
 
-    -- Miscellaneous predicates {{{
-    ["null?"] = function (env, expr)
-        return #env:_eval(expr) == 0
-    end,
-    -- }}}
-
     assert = function (env, test)
         assert(env:_eval(test))
     end,
