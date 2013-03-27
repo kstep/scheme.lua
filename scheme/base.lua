@@ -6,6 +6,10 @@ local _M = {}
 
 genv:_define {
     -- Basic arithmetic {{{
+    ["+inf.0"] = 1/0,
+    ["-inf.0"] = -1/0,
+    ["+nan.0"] = -(0/0),
+
     ["+"] = function (env, ...)
         local arg = { ... }
         sum = env:_eval(arg[1]) or 0

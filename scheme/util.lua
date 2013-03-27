@@ -47,6 +47,14 @@ local function list_dump(expr)
         return "#<void>"
 
     else
+        if expr == 1/0 then
+            return "+inf.0"
+        elseif expr == -1/0 then
+            return "-inf.0"
+        elseif expr ~= expr then
+            return "+nan.0"
+        end
+
         return tostring(expr)
     end
 end
