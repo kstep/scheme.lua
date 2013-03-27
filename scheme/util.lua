@@ -24,10 +24,12 @@ end
 _M.var_dump = var_dump
 
 local function list_dump(expr)
-    if type(expr) == "function" then
+    local expr_type = type(expr)
+
+    if expr_type == "function" then
         return "#<Closure>"
 
-    elseif type(expr) == "table" then
+    elseif expr_type == "table" then
         local result = " "
         for _, v in ipairs(expr) do
             result = result .. " " .. list_dump(v)
@@ -35,11 +37,14 @@ local function list_dump(expr)
         result = "(" .. result:sub(3) .. ")"
         return result
 
-    elseif type(expr) == "string" then
+    elseif expr_type == "string" then
         return expr:find("%s") and "\"" .. expr:gsub("\\", "\\\\"):gsub("\"", "\\\"") .. "\"" or expr
 
-    elseif type(expr) == "boolean" then
+    elseif expr_type == "boolean" then
         return expr and "#t" or "#f"
+
+    elseif expr_type == "nil" then
+        return "()"
 
     else
         return tostring(expr)

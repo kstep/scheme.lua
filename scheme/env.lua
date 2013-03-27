@@ -44,13 +44,12 @@ function _M._eval(env, ...)
 
     local result
     for _, token in ipairs({ ... }) do
-        if type(token) == "function" then
-            result = token(env)
+        local token_type = type(token)
 
-        elseif type(token) == "boolean" then
+        if token_type == "boolean" or token_type == "number" or token_type == "nil" then
             result = token
 
-        elseif type(token) == "table" then
+        elseif token_type == "table" then
             local fun = env:_eval(token[1])
             assert(type(fun) == "function", "Error: " .. util.list_dump(fun) .. " is not a function")
 
@@ -58,15 +57,18 @@ function _M._eval(env, ...)
             for i = 2, #token do table.insert(args, token[i]) end
             result = fun(env, unpack(args))
 
-        elseif type(token) == "number" then
-            result = token
+        elseif token_type == "function" then
+            result = token(env)
+
+        elseif token_type == "string" then
+            if token:sub(1, 1) == "\"" then
+                result = token:sub(2)
+            else
+                result = env[token]
+            end
 
         else
-            if token:sub(1, 1) == "\"" and token:sub(-1) == "\"" then
-                result = token:sub(2, -2)
-            else
-                result = tonumber(token) or env[token]
-            end
+            error("Error: unexpected token type: '" .. token_type "'")
         end
     end
 

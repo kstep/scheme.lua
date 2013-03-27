@@ -30,7 +30,7 @@ local function token(expr)
                 i = e + 2
             else
                 r = r .. expr:sub(i, s - 1)
-                return "\"" .. r .. "\"", expr:sub(e + 1)
+                return "\"" .. r, expr:sub(e + 1)
             end
         end
 
@@ -78,12 +78,17 @@ local function parse(tokens)
             if type(result) ~= "table" then
                 error("Syntax error: Unbalanced parenthesis")
             end
-            return result
 
-        elseif t == "#f" then
+            if #result == 0 then
+                return nil
+            else
+                return result
+            end
+
+        elseif t == "#f" or t == "#F" then
             table.insert(result, false)
 
-        elseif t == "#t" then
+        elseif t == "#t" or t == "#T" then
             table.insert(result, true)
 
         elseif t == "." then
@@ -93,7 +98,7 @@ local function parse(tokens)
             table.insert(result, tonumber(t:sub(3)) or t)
 
         else
-            table.insert(result, t)
+            table.insert(result, tonumber(t) or t)
         end
     end
 
