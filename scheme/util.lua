@@ -44,7 +44,7 @@ local function list_dump(expr)
         return expr and "#t" or "#f"
 
     elseif expr_type == "nil" then
-        return "()"
+        return "#<void>"
 
     else
         return tostring(expr)

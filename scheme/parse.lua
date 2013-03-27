@@ -78,12 +78,7 @@ local function parse(tokens)
             if type(result) ~= "table" then
                 error("Syntax error: Unbalanced parenthesis")
             end
-
-            if #result == 0 then
-                return nil
-            else
-                return result
-            end
+            return result
 
         elseif t == "#f" or t == "#F" then
             table.insert(result, false)
@@ -94,11 +89,25 @@ local function parse(tokens)
         elseif t == "." then
             -- skip
     
-        elseif t:sub(1, 2) == "#i" then
-            table.insert(result, tonumber(t:sub(3)) or t)
+        elseif t == "#<void>" or t == "#<undefined>" then
+            table.insert(result, nil)
 
         else
-            table.insert(result, tonumber(t) or t)
+            local chch = t:sub(1, 2)
+            local base = nil
+
+            if chch == "#i" or chch == "#e" then
+                base = 10
+            elseif chch == "#b" then
+                base = 2
+            elseif chch == "#o" then
+                base = 8
+            elseif chch == "#x" then
+                base = 16
+            end
+
+            if base then t = t:sub(3) end
+            table.insert(result, tonumber(t, base) or t)
         end
     end
 
