@@ -12,7 +12,7 @@ genv:_define {
 
     ["+"] = function (env, ...)
         local arg = { ... }
-        sum = env:_eval(arg[1]) or 0
+        local sum = env:_eval(arg[1]) or 0
         for i = 2, #arg do
             sum = sum + env:_eval(arg[i])
         end
@@ -21,7 +21,12 @@ genv:_define {
 
     ["-"] = function (env, ...)
         local arg = { ... }
-        dif = env:_eval(arg[1]) or 0
+        local dif = env:_eval(arg[1]) or 0
+
+        if #arg < 2 then
+            return -dif
+        end
+
         for i = 2, #arg do
             dif = dif - env:_eval(arg[i])
         end
@@ -30,7 +35,7 @@ genv:_define {
 
     ["*"] = function (env, ...)
         local arg = { ... }
-        mul = env:_eval(arg[1]) or 1
+        local mul = env:_eval(arg[1]) or 1
         for i = 2, #arg do
             mul = mul * env:_eval(arg[i])
         end
@@ -39,7 +44,7 @@ genv:_define {
 
     ["/"] = function (env, ...)
         local arg = { ... }
-        div = env:_eval(arg[1]) or 1
+        local div = env:_eval(arg[1]) or 1
         for i = 2, #arg do
             div = div / env:_eval(arg[i])
         end
@@ -169,7 +174,7 @@ genv:_define {
 
     -- Boolean operations {{{
     ["or"] = function (env, ...)
-        local val
+        local val = false
         for _, v in ipairs({ ... }) do
             val = env:_eval(v)
             if val then return val end
@@ -178,7 +183,7 @@ genv:_define {
     end,
 
     ["and"] = function (env, ...)
-        local val
+        local val = true
         for _, v in ipairs({ ... }) do
             val = env:_eval(v)
             if not val then return val end
