@@ -245,6 +245,10 @@ genv:_define {
     display = function (env, expr)
         io.write(list_dump(env:_eval(expr)))
     end,
+
+    newline = function (env)
+        print()
+    end,
     -- }}}
 
     -- Assignment {{{
