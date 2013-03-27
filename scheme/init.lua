@@ -29,5 +29,24 @@ function _M.new(env)
     return env:_new()
 end
 
+local code_mt = {
+    __index = {
+        eval = _M.eval
+    }
+}
+
+function _M.compile(expr)
+    return setmetatable({ parse.string(expr) }, code_mt)
+end
+
+function _M.compilefile(file)
+    return setmetatable({ parse.file(file) }, code_mt)
+end
+
+function _M.eval(code, env)
+    env = env or genv
+    return env:_eval(code)
+end
+
 return _M
 
