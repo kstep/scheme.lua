@@ -160,6 +160,10 @@ local _M = {
     include = function (env, filename)
         return env:_eval(parse.file(env:_eval(filename)))
     end,
+
+    values = function (env, ...)
+        return unpack(env:list(...))
+    end,
     -- }}}
 
     -- Classic list operations {{{
