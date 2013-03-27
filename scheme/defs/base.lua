@@ -341,3 +341,8 @@ return {
     end,
 }
 
+-- letrec and let* are the same due to Lua nature,
+-- so we just make letrec an alias to let* for compatibility
+_M["letrec"] = _M["let*"]
+
+return _M
