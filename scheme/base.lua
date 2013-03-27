@@ -67,6 +67,16 @@ genv:_define {
     ["list?"] = function (env, arg)
         return type(env:_eval(arg)) == "table"
     end,
+
+    ["pair?"] = function (env, arg)
+        local val = env:_eval(arg)
+        return type(val) == "table" and #val > 0
+    end,
+
+    ["null?"] = function (env, arg)
+        local val = env:_eval(arg)
+        return type(val) == "table" and #val == 0
+    end,
     -- }}}
 
     -- Type constructors {{{
@@ -196,6 +206,26 @@ genv:_define {
 
     ["<="] = function (env, a, b)
         return env:_eval(a) <= env:_eval(b)
+    end,
+
+    ["zero?"] = function (env, a)
+        return env:_eval(a) == 0
+    end,
+
+    ["positive?"] = function (env, a)
+        return env:_eval(a) > 0
+    end,
+
+    ["negative?"] = function (env, a)
+        return env:_eval(a) < 0
+    end,
+
+    ["odd?"] = function (env, a)
+        return env:_eval(a) % 2 ~= 0
+    end,
+
+    ["even?"] = function (env, a)
+        return env:_eval(a) % 2 == 0
     end,
     -- }}}
 
