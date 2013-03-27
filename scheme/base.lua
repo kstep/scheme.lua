@@ -37,7 +37,7 @@ genv:_define {
         local arg = { ... }
         div = env:_eval(arg[1]) or 1
         for i = 2, #arg do
-            div = div / eval(env, arg[i])
+            div = div / env:_eval(arg[i])
         end
         return div
     end,
