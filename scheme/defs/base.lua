@@ -1,10 +1,7 @@
-local genv = require("scheme.env")
 local parse = require("scheme.parse")
 local list_dump = require("scheme.util").list_dump
 
-local _M = {}
-
-genv:_define {
+return {
     -- Basic arithmetic {{{
     ["+inf.0"] = 1/0,
     ["-inf.0"] = -1/0,
@@ -344,4 +341,3 @@ genv:_define {
     end,
 }
 
-return _M

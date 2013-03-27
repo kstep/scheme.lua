@@ -1,8 +1,12 @@
 local parse = require("scheme.parse")
 local genv = require("scheme.env")
-require("scheme.base")
+local defs = require("scheme.defs")
 
 local _M = {}
+
+for _, def in pairs(defs) do
+    genv:_define(def)
+end
 
 function _M.run(expr, env)
     env = env or genv

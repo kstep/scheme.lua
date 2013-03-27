@@ -1,7 +1,6 @@
-local genv = require("scheme.env")
 local math = math
 
-genv:_define {
+return {
     -- Constants {{{
     pi = math.pi,
     e = math.exp(1),
