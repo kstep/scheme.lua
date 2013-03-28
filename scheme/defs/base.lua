@@ -220,15 +220,16 @@ local _M = {
     -- }}}
 
     -- Assignment {{{
-    define = function (env, key, value)
+    define = function (env, key, ...)
         if type(key) == "table" then
             local argnames = key
             key = key[1]
             table.remove(argnames, 1)
 
-            value = env:lambda(argnames, value)
+            value = env:lambda(argnames, ...)
         else
-            value = env:_eval(value)
+            local expr = ...
+            value = env:_eval(expr)
         end
 
         env[key] = value
