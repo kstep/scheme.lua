@@ -143,4 +143,28 @@ return {
         return math.atan2(env:_eval(a), env:_eval(b))
     end,
     -- }}}
+
+    min = function (env, arg, ...)
+        local result = env:_eval(arg)
+        for _, a in ipairs({ ... }) do
+            a = env:_eval(a)
+            if a < result then
+                result = a
+            end
+        end
+
+        return result
+    end,
+
+    max = function (env, arg, ...)
+        local result = env:_eval(arg)
+        for _, a in ipairs({ ... }) do
+            a = env:_eval(a)
+            if a > result then
+                result = a
+            end
+        end
+
+        return result
+    end,
 }
