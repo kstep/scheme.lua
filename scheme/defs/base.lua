@@ -162,8 +162,12 @@ local _M = {
     end,
 
     cons = function (env, head, tail)
-        local list = { env:_eval(head) }
+        local list = env:_eval(head)
         tail = env:_eval(tail)
+
+        if type(list) ~= "table" then
+            list = { list }
+        end
 
         if type(tail) == "table" then
             for _, v in ipairs(tail) do
@@ -172,6 +176,7 @@ local _M = {
         else
             table.insert(list, tail)
         end
+
         return list
     end,
     -- }}}
