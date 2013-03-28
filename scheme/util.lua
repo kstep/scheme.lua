@@ -62,9 +62,9 @@ _M.list_dump = list_dump
 
 function _M.wrap(fun)
     return function (env, ...)
-        local args = {}
-        for _, a in ipairs({ ... }) do
-            table.insert(args, env:_eval(a))
+        local args = { ... }
+        for i = 1, #args do
+            args[i] = env:_eval(args[i])
         end
         return fun(unpack(args))
     end

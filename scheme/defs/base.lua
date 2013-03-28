@@ -67,10 +67,10 @@ end
 local function named_let(env, name, defs, ...)
     local argnames = {}
     local args = {}
-    for _, pair in ipairs(defs) do
-        table.insert(argnames, pair[1])
+    for i, pair in ipairs(defs) do
+        argnames[i] = pair[1]
         -- We don't need to eval args here, lambda will do it for us
-        table.insert(args, pair[2])
+        args[i] = pair[2]
     end
 
     local _env = env:_new()
@@ -132,9 +132,9 @@ local _M = {
     end,
 
     list = function (env, ...)
-        local result = {}
-        for _, expr in ipairs({ ... }) do
-            table.insert(result, env:_eval(expr))
+        local result = { ... }
+        for i, expr in ipairs(result) do
+            result[i] = env:_eval(expr)
         end
         return result
     end,
@@ -159,15 +159,15 @@ local _M = {
     end,
 
     begin = function (env, ...)
-        local result
-        for _, expr in ipairs({ ... }) do
-            result = env:_eval(expr)
+        local exprs = { ... }
+        for i = 1, #exprs - 1 do
+            env:_eval(exprs[i])
         end
-        return result
+        return env:_eval(exprs[#exprs])
     end,
 
     include = function (env, filename)
-        return env:_eval(compile.file(env:_eval(filename)))
+        return env:_eval({ begin = compile.file(env:_eval(filename)) })
     end,
 
     values = function (env, ...)
@@ -178,15 +178,14 @@ local _M = {
     -- Classic list operations {{{
     car = function (env, expr)
         local val = env:_eval(expr)
-        assert(val and val[1], "Error: Attempt to apply car on nil")
-        return val[1]
+        return assert(val and val[1], "Error: Attempt to apply car on nil")
     end,
 
     cdr = function (env, expr)
         expr = env:_eval(expr)
         local rest = {}
         for i = 2, #expr do
-            table.insert(rest, expr[i])
+            rest[i - 1] = expr[i]
         end
         return rest
     end,
@@ -282,17 +281,19 @@ local _M = {
     -- }}}
 
     -- Basic syntactic constructions {{{
-    lambda = function (cenv, argnames, ...)
+    lambda = function (env, argnames, ...)
         local body = { ... }
-        return function (env, ...)
+        return function (cenv, ...)
             local args = { ... }
-            local _env = cenv:_new()
+            local _env = env:_new()
 
-            assert(#argnames == #args, "Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
+            if #argnames ~= #args then
+                error("Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
+            end
 
             local i, a
             for i, a in ipairs(argnames) do
-                _env[a] = env:_eval(args[i])
+                _env[a] = cenv:_eval(args[i])
             end
             return _env:begin(unpack(body))
         end
@@ -301,6 +302,23 @@ local _M = {
     quote = function (env, arg)
         return arg
     end,
+
+    apply = function (env, fn, ...)
+        local args = { ... }
+        for i, arg in ipairs(args) do
+            args[i] = env:_eval(arg)
+        end
+
+        if type(args[#args]) == "table" then
+            local list = args[#args]
+            table.remove(args, #args)
+            for _, arg in ipairs(list) do
+                table.insert(args, arg)
+            end
+        end
+
+        return env:_eval(fn)(env, fn, unpack(args))
+    end
     -- }}}
 }
 

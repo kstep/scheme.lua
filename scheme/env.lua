@@ -95,6 +95,24 @@ function _M._import(env, defs, prefix)
     end
 end
 
+function _M._call(env, fun, name, args)
+    if type(fun) ~= "function" then
+        error("Error: " .. util.list_dump(fun) .. " is not a function")
+    end
+
+    if type(args) == "function" then args = args() end
+    return fun(env, unpack(args or {}))
+
+    -- pcall is good for debugging, but it's a killer
+    -- for Scheme evaluator, as it destroys tail calls chain,
+    -- which leads to very fast call stack overflow.
+    --local ok, result = pcall(fun, env, unpack(args or {}))
+    --if not ok then
+        --error("Error: " .. util.list_dump(name) .. ":\n" .. result)
+    --end
+    --return result
+end
+
 -- Evaluate given parsed expressions in context of current environment
 -- This is the main method of Scheme module, the heart of whole system.
 -- It evaluates each given expression and returns the last expression
@@ -102,49 +120,39 @@ end
 --
 -- @param expression...
 -- @return mixed
-function _M._eval(env, ...)
+function _M._eval(env, token)
+    if not token then return end
     if not env then env = _M end
 
-    local result
-    for _, token in ipairs({ ... }) do
-        local token_type = type(token)
+    -- Expression is evaluated to get real result.
+    local token_type = type(token)
 
-        if token_type == "boolean" or token_type == "number" or token_type == "nil" then
-            result = token
-
-        elseif token_type == "table" then
-            local fun = env:_eval(token[1])
-            assert(type(fun) == "function", "Error: " .. util.list_dump(fun) .. " is not a function")
-
-            local err
-            local args = {}
-            for i = 2, #token do table.insert(args, token[i]) end
-            err, result = pcall(fun, env, unpack(args))
-
-            if not err then
-                error("Error: " .. util.list_dump(token[1]) .. ":\n" .. util.list_dump(result))
-            end
-
-        elseif token_type == "function" then
-            local err
-            err, result = pcall(token, env)
-            if not err then
-                error("Error: " .. util.list_dump(token) .. ": " .. util.list_dump(result))
-            end
-
-        elseif token_type == "string" then
-            if token:sub(1, 1) == "\"" then
-                result = token:sub(2)
-            else
-                result = env[token]
-            end
-
+    if token_type == "string" then
+        if token:sub(1, 1) ~= "\"" then
+            return env[token]
         else
-            error("Error: Unexpected token type: '" .. token_type "'")
+            return token:sub(2)
         end
-    end
 
-    return result
+    elseif token_type == "table" then
+        local fun = env:_eval(token[1])
+        if type(fun) ~= "function" then
+            error("Error: " .. util.list_dump(fun) .. " is not a function")
+        end
+
+        args = { env }
+        for i = 2, #token do args[i] = token[i] end
+
+        -- Tail call
+        return fun(unpack(args))
+
+    elseif token_type == "function" then
+        -- Tail call
+        return token(env)
+
+    else
+        return token
+    end
 end
 
 setmetatable(_M, {

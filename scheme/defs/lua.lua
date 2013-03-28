@@ -37,6 +37,8 @@ return {
     end,
 
     assert = function (env, expr)
-        return assert(env:_eval(expr), "Error: Assertion failed: " .. list_dump(expr))
+        if not env:_eval(expr) then
+            error("Error: Assertion failed: " .. list_dump(expr))
+        end
     end,
 }

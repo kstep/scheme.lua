@@ -1,5 +1,3 @@
-local list_dump = require("scheme.util").list_dump
-
 local _M = {}
 
 -- Extract token from expression string
@@ -178,7 +176,8 @@ local function compile(tokens)
         table.insert(result, form)
     end
 
-    return unpack(result)
+    if #result < 2 then return result[1] end
+    return { begin = result }
 end
 _M.string = compile
 
