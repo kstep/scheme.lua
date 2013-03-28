@@ -1,3 +1,4 @@
+local list_dump = require("scheme.util").list_dump
 
 return {
     -- Load Lua code into string
@@ -33,5 +34,9 @@ return {
         local value = env:_eval(expr)
         env:_eval(table)[name] = value
         return value
-    end
+    end,
+
+    assert = function (env, expr)
+        return assert(env:_eval(expr), "Error: Assertion failed: " .. list_dump(expr))
+    end,
 }
