@@ -235,20 +235,6 @@ local _M = {
     end,
     -- }}}
 
-    -- Input/output {{{
-    print = function (env, expr)
-        print(list_dump(env:_eval(expr)))
-    end,
-
-    display = function (env, expr)
-        io.write(list_dump(env:_eval(expr)))
-    end,
-
-    newline = function (env)
-        print()
-    end,
-    -- }}}
-
     -- Assignment {{{
     define = function (env, key, ...)
         if type(key) == "table" then
