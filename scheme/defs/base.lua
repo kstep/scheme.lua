@@ -282,8 +282,8 @@ local _M = {
         end
     end,
 
-    quote = function (env, ...)
-        return { ... }
+    quote = function (env, arg)
+        return arg
     end,
     -- }}}
 }
