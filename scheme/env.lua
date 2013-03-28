@@ -116,12 +116,21 @@ function _M._eval(env, ...)
             local fun = env:_eval(token[1])
             assert(type(fun) == "function", "Error: " .. util.list_dump(fun) .. " is not a function")
 
+            local err
             local args = {}
             for i = 2, #token do table.insert(args, token[i]) end
-            result = fun(env, unpack(args))
+            err, result = pcall(fun, env, unpack(args))
+
+            if not err then
+                error("Error: " .. util.list_dump(token[1]) .. ":\n" .. util.list_dump(result))
+            end
 
         elseif token_type == "function" then
-            result = token(env)
+            local err
+            err, result = pcall(token, env)
+            if not err then
+                error("Error: " .. util.list_dump(token) .. ": " .. util.list_dump(result))
+            end
 
         elseif token_type == "string" then
             if token:sub(1, 1) == "\"" then
