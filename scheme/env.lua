@@ -131,7 +131,7 @@ function _M._eval(env, ...)
             end
 
         else
-            error("Error: unexpected token type: '" .. token_type "'")
+            error("Error: Unexpected token type: '" .. token_type "'")
         end
     end
 
