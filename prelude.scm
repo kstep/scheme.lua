@@ -8,7 +8,10 @@
       (fn (car lst))
       (for-each fn (cdr lst)))))
 
-(define (reduce fn lst acc)
-  (if (null? lst) acc
-    (reduce fn (cdr lst) (fn acc (car lst)))))
+(define (fold-left fn init lst)
+  (if (null? lst) init
+    (fold-left fn (fn (car lst) init) (cdr lst))))
 
+(define (fold-right fn init lst)
+  (if (null? lst) init
+    (fn (car lst) (fold-right fn init (cdr lst)))))
