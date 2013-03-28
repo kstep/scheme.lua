@@ -38,7 +38,7 @@ local function list_dump(expr)
         return result
 
     elseif expr_type == "string" then
-        return expr:find("%s") and "\"" .. expr:gsub("\\", "\\\\"):gsub("\"", "\\\"") .. "\"" or expr
+        return expr:sub(1, 1) == "\"" and "\"" .. expr:sub(2):gsub("\\", "\\\\"):gsub("\"", "\\\"") .. "\"" or expr
 
     elseif expr_type == "boolean" then
         return expr and "#t" or "#f"

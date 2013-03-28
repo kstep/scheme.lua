@@ -1,5 +1,5 @@
 local math = require("scheme.defs.math")
-local parse = require("scheme.parse")
+local compile = require("scheme.compile")
 local list_dump = require("scheme.util").list_dump
 
 local function table_equal(tbl1, tbl2)
@@ -137,7 +137,7 @@ local _M = {
     end,
 
     include = function (env, filename)
-        return env:_eval(parse.file(env:_eval(filename)))
+        return env:_eval(compile.file(env:_eval(filename)))
     end,
 
     values = function (env, ...)

@@ -1,4 +1,4 @@
-local parse = require("scheme.parse")
+local compile = require("scheme.compile")
 local genv = require("scheme.env")
 local defs = require("scheme.defs")
 
@@ -18,14 +18,14 @@ end
 -- @return mixed
 function _M.run(expr, env)
     env = env or genv
-    return env:_eval(parse.string(expr))
+    return env:_eval(compile.string(expr))
 end
 
 -- The same as run() above, but loads code from a file
 -- @see run()
 function _M.runfile(file, env)
     env = env or genv
-    return env:_eval(parse.file(file))
+    return env:_eval(compile.file(file))
 end
 
 -- Import given definitions into an environment
@@ -65,13 +65,13 @@ local code_mt = {
 -- @param string expr
 -- @return parsed expression
 function _M.compile(expr)
-    return setmetatable({ parse.string(expr) }, code_mt)
+    return setmetatable({ compile.string(expr) }, code_mt)
 end
 
 -- The same as compile() above but for files
 -- @see compile()
 function _M.compilefile(file)
-    return setmetatable({ parse.file(file) }, code_mt)
+    return setmetatable({ compile.file(file) }, code_mt)
 end
 
 -- Evaluate compiled code in given environment
