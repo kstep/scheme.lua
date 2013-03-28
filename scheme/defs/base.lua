@@ -1,5 +1,43 @@
+local math = require("scheme.defs.math")
 local parse = require("scheme.parse")
 local list_dump = require("scheme.util").list_dump
+
+local function table_equal(tbl1, tbl2)
+    if tbl1 == tbl2 then return true end
+    if type(tbl1) ~= "table" or type(tbl2) ~= "table" or #tbl1 ~= #tbl2 then return false end
+
+    for i = 1, #tbl1 do
+        if not table_equal(tbl1[i], tbl2[i]) then return false end
+    end
+
+    return true
+end
+
+local function equal(var1, var2)
+    if var1 ~= var2 then return false end
+    if type(tbl1) == "table" and type(tbl2) == "table" and #tbl1 == 0 and #tbl2 == 0 then return true end
+    return true
+end
+
+local all_equal = (function ()
+    local memoized = {}
+    return function (eqv)
+        if not memoized[eqv] then
+            memoized[eqv] = function (env, ...)
+                local list = { ... }
+                list[1] = env:_eval(list[1])
+
+                for i = 2, #list do
+                    list[i] = env:_eval(list[i])
+                    if not eqv(list[i - 1], list[i]) then return false end
+                end
+
+                return true
+            end
+        end
+        return memoized[eqv]
+    end
+end)()
 
 local function let(env, defs, ...)
     local _env = env:_new()
@@ -52,6 +90,10 @@ local _M = {
         local val = env:_eval(arg)
         return type(val) == "table" and #val == 0
     end,
+
+    ["eq?"] = all_equal(equal),
+    ["eqv?"] = all_equal(equal),
+    ["equal?"] = all_equal(table_equal),
     -- }}}
 
     -- Type constructors {{{
