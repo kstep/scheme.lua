@@ -55,6 +55,16 @@ function _M.new(env)
     return env:_new()
 end
 
+-- Evaluate compiled code in given environment
+-- @see scheme.env._eval()
+-- @param parsed code
+-- @param =env [global]
+-- @return mixed evaluation result
+function _M.eval(code, env)
+    env = env or genv
+    return env:_eval(code)
+end
+
 local code_mt = {
     __index = {
         eval = _M.eval
@@ -72,16 +82,6 @@ end
 -- @see compile()
 function _M.compilefile(file)
     return setmetatable(compile.file(file), code_mt)
-end
-
--- Evaluate compiled code in given environment
--- @see scheme.env._eval()
--- @param parsed code
--- @param =env [global]
--- @return mixed evaluation result
-function _M.eval(code, env)
-    env = env or genv
-    return env:_eval(code)
 end
 
 return _M
