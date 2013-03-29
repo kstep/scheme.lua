@@ -134,6 +134,9 @@ local function parse(tokens)
     elseif t == "'" then
         return {"quote", parse(tokens)}
 
+    elseif t:sub(1, 1) == "\"" then
+        return {"string", t:sub(2)}
+
     else
         -- There're a lot of number formats in Scheme,
         -- I try to support most of them.
@@ -169,15 +172,15 @@ end
 -- @param string|iterator tokens
 -- @return array of parsed tokens
 local function compile(tokens)
-    local result = {}
+    local result = { "begin" }
 
     tokens = tokenize(tokens)
     for form in parse, tokens do
         table.insert(result, form)
     end
 
-    if #result < 2 then return result[1] end
-    return { begin = result }
+    if #result < 3 then return result[2] end
+    return result
 end
 _M.string = compile
 

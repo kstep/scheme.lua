@@ -95,24 +95,6 @@ function _M._import(env, defs, prefix)
     end
 end
 
-function _M._call(env, fun, name, args)
-    if type(fun) ~= "function" then
-        error("Error: " .. util.list_dump(fun) .. " is not a function")
-    end
-
-    if type(args) == "function" then args = args() end
-    return fun(env, unpack(args or {}))
-
-    -- pcall is good for debugging, but it's a killer
-    -- for Scheme evaluator, as it destroys tail calls chain,
-    -- which leads to very fast call stack overflow.
-    --local ok, result = pcall(fun, env, unpack(args or {}))
-    --if not ok then
-        --error("Error: " .. util.list_dump(name) .. ":\n" .. result)
-    --end
-    --return result
-end
-
 -- Evaluate given parsed expressions in context of current environment
 -- This is the main method of Scheme module, the heart of whole system.
 -- It evaluates each given expression and returns the last expression
@@ -122,37 +104,18 @@ end
 -- @return mixed
 function _M._eval(env, token)
     if not token then return end
-    if not env then env = _M end
 
-    -- Expression is evaluated to get real result.
     local token_type = type(token)
 
     if token_type == "string" then
-        if token:sub(1, 1) ~= "\"" then
-            return env[token]
-        else
-            return token:sub(2)
-        end
-
-    elseif token_type == "table" then
-        local fun = env:_eval(token[1])
-        if type(fun) ~= "function" then
-            error("Error: " .. util.list_dump(fun) .. " is not a function")
-        end
-
-        args = { env }
-        for i = 2, #token do args[i] = token[i] end
-
-        -- Tail call
-        return fun(unpack(args))
-
-    elseif token_type == "function" then
-        -- Tail call
-        return token(env)
-
-    else
-        return token
+        return env[token]
     end
+
+    if token_type == "table" then
+        return env:_eval(token[1])(env, unpack(token, 2))
+    end
+
+    return token
 end
 
 setmetatable(_M, {

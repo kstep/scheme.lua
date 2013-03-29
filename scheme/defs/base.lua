@@ -68,9 +68,8 @@ local function named_let(env, name, defs, ...)
     local argnames = {}
     local args = {}
     for i, pair in ipairs(defs) do
-        argnames[i] = pair[1]
         -- We don't need to eval args here, lambda will do it for us
-        args[i] = pair[2]
+        argnames[i], args[i] = unpack(pair)
     end
 
     local _env = env:_new()
@@ -151,23 +150,21 @@ local _M = {
     end,
 
     ["if"] = function (env, cond, yes, no)
-        if env:_eval(cond) then
-            return env:_eval(yes)
-        else
-            return env:_eval(no)
-        end
+        return env:_eval(env:_eval(cond) and yes or no)
     end,
 
     begin = function (env, ...)
         local exprs = { ... }
         for i = 1, #exprs - 1 do
-            env:_eval(exprs[i])
+            if type(exprs[i]) == "table" then
+                env:_eval(exprs[i])
+            end
         end
         return env:_eval(exprs[#exprs])
     end,
 
     include = function (env, filename)
-        return env:_eval({ begin = compile.file(env:_eval(filename)) })
+        return env:_eval(compile.file(env:_eval(filename)))
     end,
 
     values = function (env, ...)
@@ -282,25 +279,32 @@ local _M = {
 
     -- Basic syntactic constructions {{{
     lambda = function (env, argnames, ...)
-        local body = { ... }
-        return function (cenv, ...)
+        local body = { "begin", ... }
+        if #body < 3 then
+            body = body[2]
+        end
+
+        return body and function (cenv, ...)
             local args = { ... }
-            local _env = env:_new()
 
             if #argnames ~= #args then
                 error("Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
             end
 
-            local i, a
+            local _env = env:_new()
             for i, a in ipairs(argnames) do
                 _env[a] = cenv:_eval(args[i])
             end
-            return _env:begin(unpack(body))
+            return _env:_eval(body)
         end
     end,
 
     quote = function (env, arg)
         return arg
+    end,
+
+    string = function (env, arg)
+        return tostring(arg)
     end,
 
     apply = function (env, fn, ...)
@@ -310,11 +314,7 @@ local _M = {
         end
 
         if type(args[#args]) == "table" then
-            local list = args[#args]
-            table.remove(args, #args)
-            for _, arg in ipairs(list) do
-                table.insert(args, arg)
-            end
+            args = { unpack(args, 1, #args - 1), unpack(args[#args]) }
         end
 
         return env:_eval(fn)(env, fn, unpack(args))

@@ -63,8 +63,8 @@ _M.list_dump = list_dump
 function _M.wrap(fun)
     return function (env, ...)
         local args = { ... }
-        for i = 1, #args do
-            args[i] = env:_eval(args[i])
+        for i, arg in ipairs(args) do
+            args[i] = env:_eval(arg)
         end
         return fun(unpack(args))
     end
