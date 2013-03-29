@@ -65,13 +65,13 @@ local code_mt = {
 -- @param string expr
 -- @return parsed expression
 function _M.compile(expr)
-    return setmetatable({ compile.string(expr) }, code_mt)
+    return setmetatable(compile.string(expr), code_mt)
 end
 
 -- The same as compile() above but for files
 -- @see compile()
 function _M.compilefile(file)
-    return setmetatable({ compile.file(file) }, code_mt)
+    return setmetatable(compile.file(file), code_mt)
 end
 
 -- Evaluate compiled code in given environment

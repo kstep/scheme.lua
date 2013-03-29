@@ -60,6 +60,29 @@ local function list_dump(expr)
 end
 _M.list_dump = list_dump
 
+local function lua_dump(expr)
+    local expr_type = type(expr)
+    if expr_type == "table" then
+        local result = {}
+        for _, value in ipairs(expr) do
+            table.insert(result, lua_dump(value))
+        end
+        return "{" .. table.concat(result, ",") .. "}"
+    end
+
+    if expr_type == "string" then
+        return "\"" .. expr:gsub("\\", "\\\\"):gsub("\"", "\\\""):gsub("\n", "\\n") .. "\""
+    end
+
+    if expr_type == "function" then
+        return "function()end"
+    end
+
+    return tostring(expr)
+end
+_M.lua_dump = lua_dump
+
+
 function _M.wrap(fun)
     return function (env, ...)
         local args = { ... }
