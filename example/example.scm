@@ -1,4 +1,4 @@
-#!./runscm.lua
+#!../bin/runscm.lua
 
 (define checkbook (lambda ()
 
