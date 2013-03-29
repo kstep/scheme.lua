@@ -37,6 +37,11 @@ return {
     ["/"] = function (env, ...)
         local arg = { ... }
         local div = env:_eval(arg[1]) or 1
+
+        if #arg < 2 then
+            return 1 / div
+        end
+
         for i = 2, #arg do
             div = div / env:_eval(arg[i])
         end
