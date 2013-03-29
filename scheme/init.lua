@@ -1,3 +1,6 @@
+local pairs = pairs
+local setmetatable = setmetatable
+
 local compile = require("scheme.compile")
 local genv = require("scheme.env")
 local defs = require("scheme.defs")

@@ -1,3 +1,10 @@
+local assert = assert
+local error = error
+local type = type
+local tonumber = tonumber
+local table = table
+local io = io
+
 local _M = {}
 
 -- Extract token from expression string

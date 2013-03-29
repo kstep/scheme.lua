@@ -1,3 +1,13 @@
+local pairs = pairs
+local getmetatable = getmetatable
+local setmetatable = setmetatable
+local rawget = rawget
+local type = type
+local error = error
+local tostring = tostring
+local unpack = unpack
+local table = table
+
 local util = require("scheme.util")
 
 -- Here I define global Scheme environment.

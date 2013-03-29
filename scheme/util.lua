@@ -1,3 +1,10 @@
+local type = type
+local tostring = tostring
+local pairs = pairs
+local ipairs = ipairs
+local table = table
+local unpack = unpack
+
 local _M = {}
 
 local function var_dump(var, level)

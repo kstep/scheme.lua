@@ -1,3 +1,6 @@
+local error = error
+local ipairs = ipairs
+
 local list_dump = require("scheme.util").list_dump
 
 return {

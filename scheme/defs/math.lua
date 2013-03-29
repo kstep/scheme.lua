@@ -1,3 +1,4 @@
+local ipairs = ipairs
 local math = math
 
 return {

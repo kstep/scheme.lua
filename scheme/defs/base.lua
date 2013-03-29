@@ -1,4 +1,8 @@
-local math = require("scheme.defs.math")
+local ipairs = ipairs
+local type = type
+local unpack = unpack
+local table = table
+
 local compile = require("scheme.compile")
 local list_dump = require("scheme.util").list_dump
 
