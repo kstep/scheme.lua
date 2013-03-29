@@ -40,6 +40,17 @@ function _M.import(defs, env)
     return env:_import(defs)
 end
 
+-- Export all variables from environment to given Lua table
+-- If you omit table name, it will export variables into
+-- global variables table _G.
+-- @param =table [_G]
+-- @param =env [global]
+-- @return table
+function _M.export(table, env)
+    env = env or genv
+    return env:_export(table)
+end
+
 -- Add new definitions into an environment
 -- @see scheme.env._define()
 -- @param table defs

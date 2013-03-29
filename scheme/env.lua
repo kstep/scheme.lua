@@ -128,6 +128,51 @@ function _M._eval(env, token)
     return token
 end
 
+local function split(string, sep)
+    local result = {}
+    local pos = 1
+
+    while true do
+        local s, e = string:find(sep, pos, true)
+        if not s then
+            table.insert(result, string:sub(pos))
+            break
+        end
+
+        table.insert(result, string:sub(pos, s - 1))
+        pos = e + 1
+    end
+
+    return result
+end
+
+local function setsubtable(tbl, name, value)
+    name = split(name, ".")
+    if type(tbl) ~= "table" then return end
+
+    for i = 1, #name - 1 do
+        local subtbl = tbl[name[i]]
+        if type(subtbl) ~= "table" then
+            subtbl = {}
+            tbl[name[i]] = subtbl
+        end
+        tbl = subtbl
+    end
+
+    tbl[name[#name]] = value
+    return tbl
+end
+
+function _M._export(env, table)
+    table = table or _G
+    for k, v in pairs(env) do
+        if type(v) ~= "function" then
+            setsubtable(table, k, v)
+        end
+    end
+    return table
+end
+
 setmetatable(_M, {
     __index = function (env, key)
         -- handle binding resolution failure
