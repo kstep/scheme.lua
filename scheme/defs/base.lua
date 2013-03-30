@@ -192,22 +192,17 @@ local _M = {
     end,
 
     cons = function (env, head, tail)
-        local list = env:_eval(head)
+        head = env:_eval(head)
         tail = env:_eval(tail)
 
-        if type(list) ~= "table" then
-            list = { list }
+        if type(head) ~= "table" then
+            head = { head }
+        end
+        if type(tail) ~= "table" then
+            tail = { tail }
         end
 
-        if type(tail) == "table" then
-            for _, v in ipairs(tail) do
-                table.insert(list, v)
-            end
-        else
-            table.insert(list, tail)
-        end
-
-        return list
+        return { unpack(head), unpack(tail) }
     end,
     -- }}}
 
