@@ -1,6 +1,6 @@
-(define (map fn lst)
-  (if (null? lst) '()
-    (cons (fn (car lst)) (map fn (cdr lst)))))
+;(define (map fn lst)
+  ;(if (null? lst) '()
+    ;(cons (fn (car lst)) (map fn (cdr lst)))))
 
 (define (for-each fn lst)
   (if (null? lst) '()

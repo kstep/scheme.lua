@@ -3,4 +3,5 @@ return {
     math = require("scheme.defs.math"),
     lua  = require("scheme.defs.lua"),
     io   = require("scheme.defs.io"),
+    iter = require("scheme.defs.iter"),
 }

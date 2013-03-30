@@ -128,6 +128,13 @@ function _M._eval(env, token)
     return token
 end
 
+function _M._evalall(env, args)
+    for i, arg in ipairs(args) do
+        args[i] = env:_eval(arg)
+    end
+    return args
+end
+
 local function split(string, sep)
     local result = {}
     local pos = 1
