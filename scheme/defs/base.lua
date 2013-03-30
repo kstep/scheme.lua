@@ -313,15 +313,16 @@ local _M = {
 
     apply = function (env, fn, ...)
         local args = { ... }
+
         for i, arg in ipairs(args) do
             args[i] = env:_eval(arg)
         end
 
         if type(args[#args]) == "table" then
-            args = { unpack(args, 1, #args - 1), unpack(args[#args]) }
+            args = #args == 1 and args[1] or { unpack(args, 1, #args - 1), unpack(args[#args]) }
         end
 
-        return env:_eval(fn)(env, fn, unpack(args))
+        return env:_eval(fn)(env, unpack(args))
     end
     -- }}}
 }
