@@ -1,5 +1,7 @@
 local error = error
 local ipairs = ipairs
+local pairs = pairs
+local table = table
 
 local list_dump = require("scheme.util").list_dump
 
@@ -12,7 +14,9 @@ return {
 
     -- Import Lua module into Scheme land
     ["lua-import"] = function (env, module)
-        env:_import({ [module] = require(module) })
+        local result = require(module)
+        env:_import({ [module] = result })
+        return result
     end,
 
     -- Create Lua table out of key-value pairs
@@ -29,6 +33,58 @@ return {
     -- @example (table-get tbl key)
     ["table-get"] = function (env, table, name)
         return env:_eval(table)[name]
+    end,
+
+    -- Get list of table keys
+    -- @example (table-keys tbl)
+    ["table-keys"] = function (env, expr)
+        local result = {}
+        for k, _ in pairs(env:_eval(expr)) do
+            table.insert(result, k)
+        end
+        return result
+    end,
+
+    -- Get list of table values
+    ["table-values"] = function (env, expr)
+        local result = {}
+        for _, v in pairs(env:_eval(expr)) do
+            table.insert(result, v)
+        end
+        return result
+    end,
+
+    -- Convert table to a list of pairs
+    ["table->list"] = function (env, expr)
+        local result = {}
+        for k, v in pairs(env:_eval(expr)) do
+            table.insert(result, {k, v})
+        end
+        return result
+    end,
+
+    -- Predicate to test if given expression is a table
+    ["table?"] = function (env, expr)
+        local items = 0
+        local tbl = env:_eval(expr)
+        for k, _ in pairs(tbl) do
+            if type(k) ~= "number" then
+                return true
+            end
+            items = items + 1
+        end
+        return #tbl ~= items
+    end,
+
+    -- Get list of two lists: table keys and values
+    ["table-keys-values"] = function (env, expr)
+        local keys = {}
+        local values = {}
+        for k, v in pairs(env:_eval(expr)) do
+            table.insert(keys, k)
+            table.insert(values, v)
+        end
+        return {keys, values}
     end,
 
     -- Set value in Lua table by key
