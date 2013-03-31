@@ -183,7 +183,9 @@ end
 setmetatable(_M, {
     __index = function (env, key)
         -- handle binding resolution failure
-        return rawget(env, key) or error("Error: unbound symbol: '" .. tostring(key) .. "'")
+        local value = rawget(env, key)
+        if value == nil then error("Error: unbound symbol: '" .. tostring(key) .. "'") end
+        return value
     end
 })
 
