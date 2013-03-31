@@ -39,10 +39,10 @@ local all_equal = (function ()
                 -- to check if at least one item in the list is not equal
                 -- to all other items. Hence we have O(n) calls to eval()
                 -- in worst case.
-                list[1] = env:_eval(list[1])
+                list[1] = env:__eval(list[1])
 
                 for i = 2, #list do
-                    list[i] = env:_eval(list[i])
+                    list[i] = env:__eval(list[i])
                     -- The eqv function is called once for each item in the
                     -- input list minus one, hence this loop has complexity of
                     -- O(n - 1) in regard of eqv() calls. Total loop complexity
@@ -60,9 +60,9 @@ local all_equal = (function ()
 end)()
 
 local function let(env, defs, ...)
-    local _env = env:_new()
+    local _env = env:__new()
     for _, binding in ipairs(defs) do
-        _env[binding[1]] = env:_eval(binding[2])
+        _env[binding[1]] = env:__eval(binding[2])
     end
 
     return _env:begin(...)
@@ -76,7 +76,7 @@ local function named_let(env, name, defs, ...)
         argnames[i], args[i] = unpack(pair)
     end
 
-    local _env = env:_new()
+    local _env = env:__new()
     local fn = _env:lambda(argnames, ...)
     _env[name] = fn
     return fn(_env, unpack(args))
@@ -99,28 +99,28 @@ local _M = {
 
     -- Type predicates {{{
     ["string?"] = function (env, arg)
-        return type(env:_eval(arg)) == "string"
+        return type(env:__eval(arg)) == "string"
     end,
     ["number?"] = function (env, arg)
-        return type(env:_eval(arg)) == "number"
+        return type(env:__eval(arg)) == "number"
     end,
     ["boolean?"] = function (env, arg)
-        return type(env:_eval(arg)) == "boolean"
+        return type(env:__eval(arg)) == "boolean"
     end,
     ["lambda?"] = function (env, arg)
-        return type(env:_eval(arg)) == "function"
+        return type(env:__eval(arg)) == "function"
     end,
     ["list?"] = function (env, arg)
-        return type(env:_eval(arg)) == "table"
+        return type(env:__eval(arg)) == "table"
     end,
 
     ["pair?"] = function (env, arg)
-        local val = env:_eval(arg)
+        local val = env:__eval(arg)
         return type(val) == "table" and #val > 0
     end,
 
     ["null?"] = function (env, arg)
-        local val = env:_eval(arg)
+        local val = env:__eval(arg)
         return type(val) == "table" and #val == 0
     end,
 
@@ -137,7 +137,7 @@ local _M = {
     list = function (env, ...)
         local result = { ... }
         for i, expr in ipairs(result) do
-            result[i] = env:_eval(expr)
+            result[i] = env:__eval(expr)
         end
         return result
     end,
@@ -147,28 +147,28 @@ local _M = {
     cond = function (env, ...)
         for _, pair in ipairs({ ... }) do
             local test, expr = unpack(pair)
-            if test == "else" or env:_eval(test) then
-                return env:_eval(expr)
+            if test == "else" or env:__eval(test) then
+                return env:__eval(expr)
             end
         end
     end,
 
     ["if"] = function (env, cond, yes, no)
-        return env:_eval(env:_eval(cond) and yes or no)
+        return env:__eval(env:__eval(cond) and yes or no)
     end,
 
     begin = function (env, ...)
         local exprs = { ... }
         for i = 1, #exprs - 1 do
             if type(exprs[i]) == "table" then
-                env:_eval(exprs[i])
+                env:__eval(exprs[i])
             end
         end
-        return env:_eval(exprs[#exprs])
+        return env:__eval(exprs[#exprs])
     end,
 
     include = function (env, filename)
-        return env:_eval(compile.file(env:_eval(filename)))
+        return env:__eval(compile.file(env:__eval(filename)))
     end,
 
     values = function (env, ...)
@@ -178,17 +178,17 @@ local _M = {
 
     -- Classic list operations {{{
     car = function (env, expr)
-        local val = env:_eval(expr)
+        local val = env:__eval(expr)
         return assert(val and val[1], "Error: Attempt to apply car on nil")
     end,
 
     cdr = function (env, expr)
-        return { unpack(env:_eval(expr), 2) }
+        return { unpack(env:__eval(expr), 2) }
     end,
 
     cons = function (env, head, tail)
-        head = env:_eval(head)
-        tail = env:_eval(tail)
+        head = env:__eval(head)
+        tail = env:__eval(tail)
 
         if type(tail) ~= "table" then
             tail = { tail }
@@ -206,7 +206,7 @@ local _M = {
     ["or"] = function (env, ...)
         local val = false
         for _, v in ipairs({ ... }) do
-            val = env:_eval(v)
+            val = env:__eval(v)
             if val then return val end
         end
         return val
@@ -215,14 +215,14 @@ local _M = {
     ["and"] = function (env, ...)
         local val = true
         for _, v in ipairs({ ... }) do
-            val = env:_eval(v)
+            val = env:__eval(v)
             if not val then return val end
         end
         return val
     end,
 
     ["not"] = function (env, expr)
-        return not env:_eval(expr)
+        return not env:__eval(expr)
     end,
     -- }}}
 
@@ -232,7 +232,7 @@ local _M = {
             value = env:lambda({ unpack(key, 2) }, ...)
             key = key[1]
         else
-            value = env:_eval(...)
+            value = env:__eval(...)
         end
 
         env[key] = value
@@ -240,8 +240,8 @@ local _M = {
     end,
 
     ["set!"] = function (env, key, value)
-        local val = env:_eval(value)
-        local _env = env:_find(key) or env
+        local val = env:__eval(value)
+        local _env = env:__find(key) or env
         _env[key] = val
         return val
     end,
@@ -259,9 +259,9 @@ local _M = {
     end,
 
     ["let*"] = function (env, defs, ...)
-        local _env = env:_new()
+        local _env = env:__new()
         for _, binding in ipairs(defs) do
-            _env[binding[1]] = _env:_eval(binding[2])
+            _env[binding[1]] = _env:__eval(binding[2])
         end
 
         return _env:begin(...)
@@ -282,11 +282,11 @@ local _M = {
                 error("Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
             end
 
-            local _env = env:_new()
+            local _env = env:__new()
             for i, a in ipairs(argnames) do
-                _env[a] = cenv:_eval(args[i])
+                _env[a] = cenv:__eval(args[i])
             end
-            return _env:_eval(body)
+            return _env:__eval(body)
         end
     end,
 
@@ -302,14 +302,14 @@ local _M = {
         local args = { ... }
 
         for i, arg in ipairs(args) do
-            args[i] = env:_eval(arg)
+            args[i] = env:__eval(arg)
         end
 
         if type(args[#args]) == "table" then
             args = #args == 1 and args[1] or { unpack(args, 1, #args - 1), unpack(args[#args]) }
         end
 
-        return env:_eval(fn)(env, unpack(args))
+        return env:__eval(fn)(env, unpack(args))
     end
     -- }}}
 }

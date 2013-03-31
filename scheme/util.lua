@@ -94,7 +94,7 @@ function _M.wrap(fun)
     return function (env, ...)
         local args = { ... }
         for i, arg in ipairs(args) do
-            args[i] = env:_eval(arg)
+            args[i] = env:__eval(arg)
         end
         return fun(unpack(args))
     end

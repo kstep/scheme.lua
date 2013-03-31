@@ -10,39 +10,38 @@ local table = table
 
 local util = require("scheme.util")
 
--- Here I define global Scheme environment.
--- Environments can nest into each other, and global
--- environment is the root one, the ancestor to all of them.
+-- Here I define global Scheme environment. Environments can nest into each
+-- other, and global environment is the root one, the ancestor to all of them.
 --
--- Actually an environment is just a table, so nothing can
--- stop you to create empty environment not connected to
--- global environment, and use to evaluate parsed Scheme
--- expressions, but this is a bad idea, trust me (unless
+-- Actually an environment is just a table, so nothing can stop you to create
+-- empty environment not connected to global environment, and use it to
+-- evaluate parsed Scheme expressions, but this is a bad idea, trust me (unless
 -- you really know what you are doing).
 --
--- There're a number of utility methods an environment
--- has to evaluate expressions in it, create new sub-environment
--- or add some syntax definitions into it.
+-- There're a number of utility methods an environment has to evaluate
+-- expressions in it, create new sub-environment or add some syntax definitions
+-- into it.
 --
--- As all Scheme definitions go into the same environment,
--- and these utility methods are just simple table values,
--- one can rewrite or override one of such special methods
--- either in global environment or in some sub-environment.
--- To avoid such situations, I set an agreement:
--- all special utility methods have underscore at the start
--- of their names, and you never ever name your functions,
--- variables etc. with names starting with underscore.
+-- As all Scheme definitions go into the same environment, and these utility
+-- methods are just simple table values, one can rewrite or override one of
+-- such special methods either in global environment or in some
+-- sub-environment. To avoid such situations, I set an agreement: all special
+-- utility methods have two underscores at the start of their names, and you
+-- never ever name your functions, variables etc. with names starting with
+-- underscore.
 --
 -- Again.
 --
--- ALL NAMES STARTING WITH AN UNDERSCORE ARE RESERVED.
--- DO NOT USE UNDERSCORE AS THE FIRST CHARACTER OF A NAME OF ANY
--- OF YOUR USER-DEFINED THINGS. EVER.
+-- ALL NAMES STARTING WITH TWO UNDERSCORES ARE RESERVED. DO NOT USE DOUBLE
+-- UNDERSCORE AS THE FIRST CHARACTERS OF A NAME OF ANY OF YOUR USER-DEFINED
+-- THINGS. EVER.
+--
+-- Thank you.
 
 local _M = {}
 
 -- Returns outer environment or nil for global environment
-function _M._outer(env)
+function _M.__outer(env)
     local result = getmetatable(env).__index
     return type(result) == "table" and result or nil
 end
@@ -54,23 +53,23 @@ end
 --
 -- @param string var
 -- @return environment
-function _M._find(env, var)
+function _M.__find(env, var)
     local _env = env
     while _env do
         if rawget(_env, var) then return _env end
-        _env = _env:_outer()
+        _env = _env:__outer()
     end
     return
 end
 
 -- Create new sub-environment
-function _M._new(outer)
+function _M.__new(outer)
     return setmetatable({}, { __index = outer or _M })
 end
 
 -- Add definitions into environment
 -- @param table
-function _M._define(env, defs)
+function _M.__define(env, defs)
     for name, body in pairs(defs) do
         env[name] = body
     end
@@ -92,14 +91,14 @@ end
 -- is very similar to _define() method above.
 --
 -- @param table defs
-function _M._import(env, defs, prefix)
+function _M.__import(env, defs, prefix)
     for name, body in pairs(defs) do
         if prefix then name = prefix .. "." .. name end
 
         if type(body) == "function" then
             body = util.wrap(body)
         elseif type(body) == "table" then
-            env:_import(body, name)
+            env:__import(body, name)
         end
 
         env[name] = body
@@ -113,7 +112,7 @@ end
 --
 -- @param expression...
 -- @return mixed
-function _M._eval(env, token)
+function _M.__eval(env, token)
     if not token then return end
 
     local token_type = type(token)
@@ -123,15 +122,15 @@ function _M._eval(env, token)
     end
 
     if token_type == "table" then
-        return env:_eval(token[1])(env, unpack(token, 2))
+        return env:__eval(token[1])(env, unpack(token, 2))
     end
 
     return token
 end
 
-function _M._evalall(env, args)
+function _M.__evalall(env, args)
     for i, arg in ipairs(args) do
-        args[i] = env:_eval(arg)
+        args[i] = env:__eval(arg)
     end
     return args
 end
@@ -171,7 +170,7 @@ local function setsubtable(tbl, name, value)
     return tbl
 end
 
-function _M._export(env, table)
+function _M.__export(env, table)
     table = table or _G
     for k, v in pairs(env) do
         if type(v) ~= "function" then

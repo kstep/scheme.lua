@@ -9,13 +9,13 @@ return {
     -- Load Lua code into string
     -- @return function which executes Lua code
     ["lua-load"] = function (env, code)
-        return loadstring("return " .. env:_eval(code))
+        return loadstring("return " .. env:__eval(code))
     end,
 
     -- Import Lua module into Scheme land
     ["lua-import"] = function (env, module)
         local result = require(module)
-        env:_import({ [module] = result })
+        env:__import({ [module] = result })
         return result
     end,
 
@@ -24,7 +24,7 @@ return {
     table = function (env, ...)
         local result = {}
         for _, pair in ipairs({ ... }) do
-            result[pair[1]] = env:_eval(pair[2])
+            result[pair[1]] = env:__eval(pair[2])
         end
         return result
     end,
@@ -32,14 +32,14 @@ return {
     -- Get value from Lua table
     -- @example (table-get tbl key)
     ["table-get"] = function (env, table, name)
-        return env:_eval(table)[name]
+        return env:__eval(table)[name]
     end,
 
     -- Get list of table keys
     -- @example (table-keys tbl)
     ["table-keys"] = function (env, expr)
         local result = {}
-        for k, _ in pairs(env:_eval(expr)) do
+        for k, _ in pairs(env:__eval(expr)) do
             table.insert(result, k)
         end
         return result
@@ -48,7 +48,7 @@ return {
     -- Get list of table values
     ["table-values"] = function (env, expr)
         local result = {}
-        for _, v in pairs(env:_eval(expr)) do
+        for _, v in pairs(env:__eval(expr)) do
             table.insert(result, v)
         end
         return result
@@ -57,7 +57,7 @@ return {
     -- Convert table to a list of pairs
     ["table->list"] = function (env, expr)
         local result = {}
-        for k, v in pairs(env:_eval(expr)) do
+        for k, v in pairs(env:__eval(expr)) do
             table.insert(result, {k, v})
         end
         return result
@@ -66,7 +66,7 @@ return {
     -- Predicate to test if given expression is a table
     ["table?"] = function (env, expr)
         local items = 0
-        local tbl = env:_eval(expr)
+        local tbl = env:__eval(expr)
         for k, _ in pairs(tbl) do
             if type(k) ~= "number" then
                 return true
@@ -80,7 +80,7 @@ return {
     ["table-keys-values"] = function (env, expr)
         local keys = {}
         local values = {}
-        for k, v in pairs(env:_eval(expr)) do
+        for k, v in pairs(env:__eval(expr)) do
             table.insert(keys, k)
             table.insert(values, v)
         end
@@ -90,13 +90,13 @@ return {
     -- Set value in Lua table by key
     -- @example (table-set! tbl key expr)
     ["table-set!"] = function (env, table, name, expr)
-        local value = env:_eval(expr)
-        env:_eval(table)[name] = value
+        local value = env:__eval(expr)
+        env:__eval(table)[name] = value
         return value
     end,
 
     assert = function (env, expr)
-        if not env:_eval(expr) then
+        if not env:__eval(expr) then
             error("Error: Assertion failed: " .. list_dump(expr))
         end
     end,

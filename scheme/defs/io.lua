@@ -6,11 +6,11 @@ local compile = require("scheme.compile")
 
 return {
     print = function (env, expr)
-        print(list_dump(env:_eval(expr)))
+        print(list_dump(env:__eval(expr)))
     end,
 
     display = function (env, expr)
-        io.write(list_dump(env:_eval(expr)))
+        io.write(list_dump(env:__eval(expr)))
     end,
 
     newline = function (env)
@@ -18,6 +18,6 @@ return {
     end,
 
     read = function (env)
-        return env:_eval(compile.string(io.read("*line")))
+        return env:__eval(compile.string(io.read("*line")))
     end,
 }

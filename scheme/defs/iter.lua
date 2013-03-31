@@ -1,8 +1,8 @@
 
 return {
     map = function (env, fn, ...)
-        local args = env:_evalall({ ... })
-        local fun = env:_eval(fn)
+        local args = env:__evalall({ ... })
+        local fun = env:__eval(fn)
         local result = {}
         local index = 1
 

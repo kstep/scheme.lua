@@ -11,7 +11,7 @@ local _M = {}
 
 -- import all definitions
 for _, def in pairs(defs) do
-    genv:_define(def)
+    genv:__define(def)
 end
 
 -- Parse and evaluate given expression in an environment
@@ -21,14 +21,14 @@ end
 -- @return mixed
 function _M.run(expr, env)
     env = env or genv
-    return env:_eval(compile.string(expr))
+    return env:__eval(compile.string(expr))
 end
 
 -- The same as run() above, but loads code from a file
 -- @see run()
 function _M.runfile(file, env)
     env = env or genv
-    return env:_eval(compile.file(file))
+    return env:__eval(compile.file(file))
 end
 
 -- Import given definitions into an environment
@@ -37,7 +37,7 @@ end
 -- @param =env [global]
 function _M.import(defs, env)
     env = env or genv
-    return env:_import(defs)
+    return env:__import(defs)
 end
 
 -- Export all variables from environment to given Lua table
@@ -48,7 +48,7 @@ end
 -- @return table
 function _M.export(table, env)
     env = env or genv
-    return env:_export(table)
+    return env:__export(table)
 end
 
 -- Add new definitions into an environment
@@ -57,7 +57,7 @@ end
 -- @param =env [global]
 function _M.define(defs, env)
     env = env or genv
-    return env:_define(defs)
+    return env:__define(defs)
 end
 
 -- Create a new environment with given environment as a base
@@ -66,7 +66,7 @@ end
 -- @return env
 function _M.new(env)
     env = env or genv
-    return env:_new()
+    return env:__new()
 end
 
 -- Evaluate compiled code in given environment
@@ -76,7 +76,7 @@ end
 -- @return mixed evaluation result
 function _M.eval(code, env)
     env = env or genv
-    return env:_eval(code)
+    return env:__eval(code)
 end
 
 local code_mt = {
