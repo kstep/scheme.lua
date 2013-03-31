@@ -186,6 +186,19 @@ local _M = {
         return { unpack(env:__eval(expr), 2) }
     end,
 
+    first = function (env, expr)
+        return env:__eval(expr)[1]
+    end,
+    second = function (env, expr)
+        return env:__eval(expr)[2]
+    end,
+    third = function (env, expr)
+        return env:__eval(expr)[3]
+    end,
+    nth = function (env, n, expr)
+        return env:__eval(expr)[env:__eval(n)]
+    end,
+
     cons = function (env, head, tail)
         head = env:__eval(head)
         tail = env:__eval(tail)
