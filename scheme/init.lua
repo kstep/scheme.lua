@@ -89,13 +89,15 @@ local code_mt = {
 -- @param string expr
 -- @return parsed expression
 function _M.compile(expr)
-    return setmetatable(compile.string(expr), code_mt)
+    --return setmetatable(compile.string(expr), code_mt)
+    return compile.string(expr)
 end
 
 -- The same as compile() above but for files
 -- @see compile()
 function _M.compilefile(file)
-    return setmetatable(compile.file(file), code_mt)
+    --return setmetatable(compile.file(file), code_mt)
+    return compile.file(file)
 end
 
 return _M
