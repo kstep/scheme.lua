@@ -30,7 +30,8 @@ local function var_dump(var, level)
 end
 _M.var_dump = var_dump
 
-local function list_dump(expr)
+local function list_dump(expr, depth)
+    if depth < 1 then return end
     local expr_type = type(expr)
 
     if expr_type == "function" then
@@ -39,7 +40,7 @@ local function list_dump(expr)
     elseif expr_type == "table" then
         local result = " "
         for _, v in ipairs(expr) do
-            result = result .. " " .. list_dump(v)
+            result = result .. " " .. list_dump(v, depth - 1)
         end
         result = "(" .. result:sub(3) .. ")"
         return result
@@ -65,7 +66,7 @@ local function list_dump(expr)
         return tostring(expr)
     end
 end
-_M.list_dump = list_dump
+_M.list_dump = function (expr, depth) return list_dump(expr, depth or 1/0) end
 
 local function lua_dump(expr)
     local expr_type = type(expr)
