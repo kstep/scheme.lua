@@ -113,7 +113,7 @@ end
 -- @param expression...
 -- @return mixed
 function _M.__eval(env, token)
-    if not token then return end
+    if not token then return token end
 
     local token_type = type(token)
 
