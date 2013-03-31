@@ -9,6 +9,14 @@ local defs = require("scheme.defs")
 
 local _M = {}
 
+local function eval(code, env)
+    env = env or genv
+    local ok, result = pcall(env.__eval, env, code)
+    if ok then return result end
+    
+    return (type(result) == "table" and result[1] or env)["error-handler"](env, result)
+end
+
 -- import all definitions
 for _, def in pairs(defs) do
     genv:__define(def)
@@ -20,13 +28,13 @@ end
 -- @param =env [global]
 -- @return mixed
 function _M.run(expr, env)
-    return (env or genv):__eval(compile.string(expr))
+    return eval(compile.string(expr), env)
 end
 
 -- The same as run() above, but loads code from a file
 -- @see run()
 function _M.runfile(file, env)
-    return (env or genv):__eval(compile.file(file))
+    return eval(compile.file(file), env)
 end
 
 -- Import given definitions into an environment
@@ -68,9 +76,7 @@ end
 -- @param parsed code
 -- @param =env [global]
 -- @return mixed evaluation result
-function _M.eval(code, env)
-    return (env or genv):__eval(code)
-end
+_M.eval = eval
 
 local code_mt = {
     __index = {

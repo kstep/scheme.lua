@@ -3,8 +3,8 @@ local error = error
 local list_dump = require("scheme.util").list_dump
 
 return {
-    error = function (env, reason)
-        error("Error: " .. list_dump(reason))
+    error = function (env, reason, level)
+        error({env, "Error: " .. list_dump(reason)}, 2)
     end,
 
     warn = function (env, reason)
@@ -23,6 +23,10 @@ return {
             end
         end
 
-        error(result)
+        return env["error-handler"](env, result)
+    end,
+
+    ["error-handler"] = function (env, reason)
+        error(reason, 3)
     end,
 }

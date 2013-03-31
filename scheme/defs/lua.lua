@@ -1,4 +1,3 @@
-local error = error
 local ipairs = ipairs
 local pairs = pairs
 local table = table
@@ -97,7 +96,7 @@ return {
 
     assert = function (env, expr)
         if not env:__eval(expr) then
-            error("Error: Assertion failed: " .. list_dump(expr))
+            env:error("Assertion failed: " .. list_dump(expr))
         end
     end,
 }

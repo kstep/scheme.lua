@@ -3,7 +3,6 @@ local getmetatable = getmetatable
 local setmetatable = setmetatable
 local rawget = rawget
 local type = type
-local error = error
 local tostring = tostring
 local unpack = unpack
 local table = table
@@ -38,7 +37,7 @@ local util = require("scheme.util")
 --
 -- Thank you.
 
-local _M = {}
+local _M = { "global" }
 
 -- Returns outer environment or nil for global environment
 function _M.__outer(env)
@@ -63,8 +62,10 @@ function _M.__find(env, var)
 end
 
 -- Create new sub-environment
+local envno = 0
 function _M.__new(outer)
-    return setmetatable({}, { __index = outer or _M })
+    envno = envno + 1
+    return setmetatable({ "local" .. envno }, { __index = outer or _M })
 end
 
 -- Add definitions into environment
@@ -184,7 +185,7 @@ setmetatable(_M, {
     __index = function (env, key)
         -- handle binding resolution failure
         local value = rawget(env, key)
-        if value == nil then error("Error: unbound symbol: '" .. tostring(key) .. "'") end
+        if value == nil then env:error("Unbound symbol: '" .. tostring(key) .. "'") end
         return value
     end
 })

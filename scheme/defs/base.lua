@@ -179,7 +179,7 @@ local _M = {
     -- Classic list operations {{{
     car = function (env, expr)
         local val = env:__eval(expr)
-        return assert(val and val[1], "Error: Attempt to apply car on nil")
+        return val and val[1] or env:error("Attempt to apply car on nil")
     end,
 
     cdr = function (env, expr)
@@ -254,7 +254,7 @@ local _M = {
             return named_let(env, defs, ...)
 
         else -- error
-            error("Error: Missing expression")
+            env:error("Missing expression")
         end
     end,
 
@@ -279,7 +279,7 @@ local _M = {
             local args = { ... }
 
             if #argnames ~= #args then
-                error("Error: " .. list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
+                env:error(list_dump(body) .. ": wrong number of arguments (expected: " .. #argnames .. " got: " .. #args .. ")")
             end
 
             local _env = env:__new()
