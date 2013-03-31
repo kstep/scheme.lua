@@ -43,7 +43,8 @@ local _M = {}
 
 -- Returns outer environment or nil for global environment
 function _M._outer(env)
-    return getmetatable(env).__index
+    local result = getmetatable(env).__index
+    return type(result) == "table" and result or nil
 end
 
 -- Find an environment with given variable defined
