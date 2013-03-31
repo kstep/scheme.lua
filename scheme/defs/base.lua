@@ -183,26 +183,22 @@ local _M = {
     end,
 
     cdr = function (env, expr)
-        expr = env:_eval(expr)
-        local rest = {}
-        for i = 2, #expr do
-            rest[i - 1] = expr[i]
-        end
-        return rest
+        return { unpack(env:_eval(expr), 2) }
     end,
 
     cons = function (env, head, tail)
         head = env:_eval(head)
         tail = env:_eval(tail)
 
-        if type(head) ~= "table" then
-            head = { head }
-        end
         if type(tail) ~= "table" then
             tail = { tail }
         end
 
-        return { unpack(head), unpack(tail) }
+        if not head or (type(head) == "table" and #head == 0) then
+            return tail
+        end
+
+        return { head, unpack(tail) }
     end,
     -- }}}
 
@@ -233,14 +229,10 @@ local _M = {
     -- Assignment {{{
     define = function (env, key, ...)
         if type(key) == "table" then
-            local argnames = key
+            value = env:lambda({ unpack(key, 2) }, ...)
             key = key[1]
-            table.remove(argnames, 1)
-
-            value = env:lambda(argnames, ...)
         else
-            local expr = ...
-            value = env:_eval(expr)
+            value = env:_eval(...)
         end
 
         env[key] = value
