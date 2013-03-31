@@ -1,4 +1,6 @@
-#!../bin/runscm.lua
+#!../bin/runscm.lua !#
+
+(define (print arg) (display arg) (newline))
 
 (define checkbook (lambda ()
 

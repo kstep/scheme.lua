@@ -1,4 +1,9 @@
 #!/usr/bin/lua
 
 local scheme = require("scheme")
-scheme.runfile(arg[1])
+for _, a in ipairs(arg) do
+    if a ~= "!#" then
+        scheme.runfile(a)
+        break
+    end
+end
