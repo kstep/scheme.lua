@@ -78,13 +78,18 @@ end
 
 -- Create iterator to tokenize given expression string
 -- @see token()
+local void = function () end
 local function tokenize(iter)
     local part
-    if type(iter) == "string" then
-        part = iter
-        iter = function () end
-    else
+
+    iter = iter or ""
+    if type(iter) == "function" then
         part = iter()
+    elseif type(iter) == "string" then
+        part = iter
+        iter = void
+    else
+        error("Parse error: Unexpected stream type: " .. type(iter))
     end
 
     local tokenize_part
