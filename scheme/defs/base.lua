@@ -166,7 +166,10 @@ local _M = {
     end,
 
     values = function (env, ...)
-        return unpack(env:list(...))
+        return unpack(env:__evalall({ ... }))
+    end,
+    ["call-with-values"] = function (env, producer, consumer)
+        return env:__eval(consumer)(env, env:__eval(producer)(env))
     end,
 
     eval = function (env, form)
@@ -297,6 +300,7 @@ local _M = {
             for i, a in ipairs(argnames) do
                 _env[a] = cenv:__eval(args[i])
             end
+
             return _env:__eval(body)
         end
     end,
