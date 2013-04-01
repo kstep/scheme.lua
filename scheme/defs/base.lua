@@ -19,10 +19,8 @@ local function table_equal(tbl1, tbl2)
 end
 
 local function equal(var1, var2)
-    if var1 ~= var2 then return false end
     -- According to Scheme specs, two empty tables are equal in regard to eqv? and eq? forms
-    if type(tbl1) == "table" and type(tbl2) == "table" and #tbl1 == 0 and #tbl2 == 0 then return true end
-    return true
+    return var1 == var2 or (type(tbl1) == "table" and type(tbl2) == "table" and #tbl1 == 0 and #tbl2 == 0)
 end
 
 -- Memoized version of high-order function to generate function to check if all
