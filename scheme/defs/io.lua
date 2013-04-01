@@ -18,6 +18,6 @@ return {
     end,
 
     read = function (env)
-        return env:__eval(compile.string(io.read("*line")))
+        return compile.string(io.read("*line"))
     end,
 }

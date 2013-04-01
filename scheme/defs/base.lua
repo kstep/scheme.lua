@@ -174,6 +174,10 @@ local _M = {
     values = function (env, ...)
         return unpack(env:list(...))
     end,
+
+    eval = function (env, form)
+        return env:__eval(env:__eval(form))
+    end,
     -- }}}
 
     -- Classic list operations {{{
