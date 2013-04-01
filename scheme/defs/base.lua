@@ -133,11 +133,7 @@ local _M = {
     end,
 
     list = function (env, ...)
-        local result = { ... }
-        for i, expr in ipairs(result) do
-            result[i] = env:__eval(expr)
-        end
-        return result
+        return env:__evalall({ ... })
     end,
     -- }}}
 
