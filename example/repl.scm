@@ -12,7 +12,7 @@
        (display PROMPT)
        (with-handlers
          ([yes handler])
-         (set! result (eval (read))))
+         (set! result (eval (or (read) ""))))
        (if (eq? result quit) '()
          (begin
            (display result)
