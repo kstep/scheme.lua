@@ -25,4 +25,12 @@ return {
         return env:map(function (...) return { ... } end, ...)
     end,
 
+    ["for-each"] = function (env, fun, lst)
+        lst = env:__eval(lst)
+        fun = env:__eval(fun)
+
+        for _, v in ipairs(lst) do
+            fun(env, v)
+        end
+    end,
 }
