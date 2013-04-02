@@ -4,7 +4,9 @@ local list_dump = require("scheme.util").list_dump
 
 return {
     error = function (env, reason, level)
-        error({env, "Error: " .. list_dump(reason)}, 2)
+        error(setmetatable({env, "Error: " .. list_dump(reason)}, {
+            __tostring = function (exn) return exn[2] end
+        }), 2)
     end,
 
     warn = function (env, reason)
