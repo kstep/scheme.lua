@@ -132,6 +132,26 @@ local _M = {
         return table.concat({ ... }, " ")
     end,
 
+    ["string-append"] = function (env, ...)
+        return table.concat(env:__evalall({ ... }), "")
+    end,
+
+    append = function (env, ...)
+        local result
+        for _, expr in ipairs({ ... }) do
+            expr = env:__eval(expr)
+            if #expr > 0 then
+                result = result and { unpack(result), unpack(expr) } or expr
+            end
+        end
+
+        return result
+    end,
+
+    length = function (env, expr)
+        return #(env:__eval(expr))
+    end,
+
     list = function (env, ...)
         return env:__evalall({ ... })
     end,
