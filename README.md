@@ -4,6 +4,8 @@ This is a Scheme dialect compiler for Lua.
 
 It parses S-expressions into Lua structures and evaluates them.
 
+You will need Lua 5.1 or 5.2 to use it.
+
 You can run an interpreter to evaluate any Scheme file (well not any, only
 subset of Scheme is supported for now, but nevertheless):
 
@@ -64,6 +66,16 @@ so I can fix things up. I'm happy to learn from you!
      I don't plan to implement it in near future, as the Scheme dialect is
      easily extensible with Lua code. You can always write your own syntax
      structure in Lua and plug it into Scheme land.
+
+   * A huge number of number types available in Scheme (no pun intended).
+
+     Scheme supports exact and inexact numbers, as well as integers,
+     reals, complex numbers etc. Lua only has floats (or integers, depending
+     on compilation flags). I try to parse most simple number literals
+     in Scheme sources, but all numbers end up as simple Lua numbers,
+     and it's unlikely to change in near future as implementing it in Lua
+     will be very cumbersome and slow. So don't expect great precision
+     from your "exact" numbers. You were warned!
 
    * A lot of Scheme forms, I will implement at some point (except for
      things which are too difficult or impossible to do in Lua).
