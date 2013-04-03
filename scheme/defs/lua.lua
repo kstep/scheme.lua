@@ -5,17 +5,29 @@ local table = table
 local list_dump = require("scheme.util").list_dump
 
 return {
-    -- Load Lua code into string
+    -- Compile Lua code from a string
     -- @return function which executes Lua code
-    ["lua-load"] = function (env, code)
+    ["lua-compile"] = function (env, code)
         return loadstring("return " .. env:__eval(code))
     end,
 
     -- Import Lua module into Scheme land
-    ["lua-import"] = function (env, module)
+    ["lua-require"] = function (env, module)
         local result = require(module)
         env:__import({ [module] = result })
         return result
+    end,
+
+    -- Import anything from global Lua environment
+    -- into Scheme land
+    ["lua-import"] = function (env, thing)
+        env:__import({ [thing] = _G[thing] })
+        return _G[thing]
+    end,
+
+    -- Evaluate any Lua code from a string
+    ["lua-eval"] = function (env, code)
+        return loadstring("return " .. env:__eval(code))()
     end,
 
     -- Create Lua table out of key-value pairs
