@@ -168,7 +168,11 @@ local _M = {
     end,
 
     ["if"] = function (env, cond, yes, no)
-        return env:__eval(env:__eval(cond) and yes or no)
+        if env:__eval(cond) then
+            return env:__eval(yes)
+        else
+            return env:__eval(no)
+        end
     end,
 
     begin = function (env, ...)
