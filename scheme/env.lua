@@ -181,13 +181,18 @@ function _M.__export(env, table)
     return table
 end
 
-setmetatable(_M, {
+function _M.__rebase(env, outer)
+    return setmetatable(env, {
+        __index = outer or _G
+    })
+end
+
+local nullenv = setmetatable({ "null" }, {
     __index = function (env, key)
-        -- handle binding resolution failure
-        local value = rawget(env, key)
-        if value == nil then env:error("Unbound symbol: '" .. tostring(key) .. "'") end
-        return value
+        error("Unbound symbol: '" .. tostring(key) .. "'")
     end
 })
+
+_M:__rebase(nullenv)
 
 return _M
